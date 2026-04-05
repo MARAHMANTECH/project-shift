@@ -4,7 +4,7 @@
 # ============================================================
 
 # ── Stage 1: Dependencies ──
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 
 # Kopiér workspace root + alle package.json filer
@@ -13,11 +13,14 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/esg-core/package.json ./packages/esg-core/
 
-# Installér alle dependencies (workspace-aware)
+# Kopiér Prisma schema (nødvendig for postinstall: prisma generate)
+COPY prisma/ ./prisma/
+
+# Installér alle dependencies (workspace-aware, kører postinstall → prisma generate)
 RUN npm ci --include=dev
 
 # ── Stage 2: Builder ──
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Kopiér deps fra stage 1 (hoisted til root node_modules)
@@ -48,7 +51,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build --workspace=@project-shift/web
 
 # ── Stage 3: Runner (minimal) ──
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

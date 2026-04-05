@@ -4,7 +4,7 @@
 # ============================================================
 
 # ── Stage 1: Dependencies ──
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 
 # Kopiér workspace root + alle package.json filer
@@ -20,7 +20,7 @@ COPY prisma/ ./prisma/
 RUN npm ci --include=dev
 
 # ── Stage 2: Builder ──
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Kopiér deps + genereret Prisma client fra stage 1 (hoisted)
@@ -36,7 +36,7 @@ COPY prisma/ ./prisma/
 RUN npm run build --workspace=@project-shift/api
 
 # ── Stage 3: Production Dependencies ──
-FROM node:20-alpine AS prod-deps
+FROM node:22-alpine AS prod-deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -49,7 +49,7 @@ COPY prisma/ ./prisma/
 RUN npm ci --omit=dev
 
 # ── Stage 4: Runner (minimal) ──
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

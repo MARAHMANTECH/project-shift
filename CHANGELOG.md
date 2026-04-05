@@ -5,6 +5,30 @@ Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
 ---
 
+## [0.9.0] - 2026-04-05
+
+### M5: Railway Deployment Infrastructure
+
+#### Docker
+- **`apps/web/Dockerfile`**: Multi-stage Next.js standalone build (deps → build → runner)
+- **`apps/api/Dockerfile`**: Multi-stage NestJS build (deps → build → prod-deps → runner)
+- **`.dockerignore`**: Ekskluderer node_modules, build-output, env-filer, docs
+- Non-root brugere i begge images for sikkerhed
+
+#### Railway Konfiguration
+- **`apps/web/railway.json`**: Dockerfile builder + start command
+- **`apps/api/railway.json`**: Dockerfile builder + Prisma migrate deploy
+
+#### API
+- **Health endpoint**: `GET /api/v1/health` med database connectivity check
+- **CORS**: Dynamisk origin med Railway subdomæne-support via regex
+- **Prisma postinstall**: Automatisk `prisma generate` i build-pipeline
+
+#### Git
+- Repository initialiseret med initial commit (140 filer)
+
+---
+
 ## [0.8.1] - 2026-04-05
 
 ### M4: Enterprise Identity & Super Admin Portal

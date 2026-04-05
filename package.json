@@ -11,6 +11,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
+    "postinstall": "npx prisma generate",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",

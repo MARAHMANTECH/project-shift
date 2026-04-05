@@ -6,10 +6,10 @@
 ---
 
 ## Aktuel Version
-`v0.8.0` - M4: Clerk Auth Integration
+`v0.9.0` - M5: Railway Deployment Infrastructure
 
 ## Aktuel Milestone
-**M4: Authentication — Clerk Auth Integration** ✅ Færdig
+**M5: Railway Deployment** ✅ Infrastruktur klar
 
 ## Status
 | Omraade | Status |
@@ -47,6 +47,11 @@
 | Gamificeret ESG-visualisering | ✅ Færdig |
 | Input/SelectInput/TextareaInput | ✅ Færdig |
 | Brand Identity (alle sider) | ✅ Færdig |
+| Docker (web + api Dockerfile) | ✅ Færdig |
+| Railway konfiguration | ✅ Færdig |
+| Health endpoint (/api/v1/health) | ✅ Færdig |
+| CORS produktion (Railway regex) | ✅ Færdig |
+| Git repository | ✅ Initialiseret |
 
 ## Færdiggjorte Filer
 
@@ -130,8 +135,9 @@
    - [x] M3: UI/UX Transformation
    - [x] M3.5: UI/UX Premium (Editorial Organicism v2)
    - [x] M4: Clerk Auth Integration
+   - [x] M5: Railway Deployment Infrastructure
 
 ---
 
-> **Sidst opdateret**: 2026-04-05T16:08:00+02:00
-> **Opdateret af**: AI Agent (M4 Clerk Auth Integration)
+> **Sidst opdateret**: 2026-04-05T21:05:00+02:00
+> **Opdateret af**: AI Agent (M5 Railway Deployment)

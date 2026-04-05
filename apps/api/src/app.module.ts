@@ -8,6 +8,7 @@ import { RidesModule } from "./modules/rides/rides.module";
 import { MeetingPointsModule } from "./modules/meeting-points/meeting-points.module";
 import { EsgModule } from "./modules/esg/esg.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { HealthModule } from "./modules/health/health.module";
 import { SuperAdminModule } from "./modules/super-admin/super-admin.module";
 import { IntegrationHubModule } from "./modules/integration-hub/integration-hub.module";
 
@@ -21,6 +22,7 @@ import { IntegrationHubModule } from "./modules/integration-hub/integration-hub.
     MeetingPointsModule,
     RidesModule,
     EsgModule,
+    HealthModule,
     SuperAdminModule,
     IntegrationHubModule,
   ],

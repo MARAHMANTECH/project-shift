@@ -1,0 +1,23 @@
+{
+  "name": "Project SHIFT",
+  "short_name": "SHIFT",
+  "description": "Den lukkede platform for virksomheder der kombinerer samkørsel, ESG-rapportering og community events.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#effcf6",
+  "theme_color": "#0ea572",
+  "orientation": "portrait-primary",
+  "lang": "da",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

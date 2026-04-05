@@ -1,0 +1,497 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Project SHIFT — SoulEx Design System
+   "Editorial Organicism: The Sustainable Concierge"
+   Warm · Organic · Trustworthy · GoMore-inspired
+   Fra klinisk data til menneskeligt fællesskab
+   ============================================================ */
+
+@theme {
+  /* ── Primary: Forest Green ── naturlig, bæredygtig */
+  --color-primary-50: #f0f7ef;
+  --color-primary-100: #dceeda;
+  --color-primary-200: #b8ddb5;
+  --color-primary-300: #88c483;
+  --color-primary-400: #5da957;
+  --color-primary-500: #2D5A27;   /* Main brand — Forest Green */
+  --color-primary-600: #254d20;
+  --color-primary-700: #1e3f1a;
+  --color-primary-800: #183215;
+  --color-primary-900: #122710;
+  --color-primary-fixed: #bcf0ae;
+  --color-primary-fixed-dim: #a1d494;
+
+  /* ── Neutral: Warm Sands ── varm, organisk */
+  --color-neutral-50: #F5F2ED;    /* Warm Sands — base */
+  --color-neutral-100: #EDE9E2;
+  --color-neutral-200: #DED8CE;
+  --color-neutral-300: #C8C0B4;
+  --color-neutral-400: #A39A8C;
+  --color-neutral-500: #7D7468;
+  --color-neutral-600: #5E564C;
+  --color-neutral-700: #453F37;
+  --color-neutral-800: #2D2924;
+  --color-neutral-900: #1A1714;
+  --color-neutral-950: #0D0B09;
+
+  /* ── Accent: Sun-kissed Orange ── energi, CTA'er */
+  --color-accent-400: #FFa060;
+  --color-accent-500: #FF8C42;   /* Main CTA — Sun-kissed Orange */
+  --color-accent-600: #E67A35;
+  --color-accent-700: #CC6A2B;
+
+  /* ── Semantic ── harmoniseret med varm palette */
+  --color-success: #3D9B3F;
+  --color-warning: #E8A832;
+  --color-error: #D94E4E;
+  --color-info: #4A8FD4;
+
+  /* ── Surface Tiers (Editorial Organicism) ── */
+  --color-surface: #fcf9f4;
+  --color-surface-lowest: #ffffff;
+  --color-surface-low: #f6f3ee;
+  --color-surface-container: #f0ede8;
+  --color-surface-high: #ebe8e3;
+  --color-surface-highest: #e5e2dd;
+  --color-surface-dim: #dcdad5;
+
+  /* ── Typography ── Bricolage Grotesque (headlines) + Inter (body/labels) */
+  --font-sans: "Bricolage Grotesque", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* ── Border Radius ── minimum 16px per Brand Identity */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── Ambient: felt, not seen (Editorial Organicism) */
+  --shadow-glass: 0 8px 32px rgba(45, 90, 39, 0.06);
+  --shadow-elevated: 0 20px 60px rgba(26, 23, 20, 0.08);
+  --shadow-card: 0 4px 20px rgba(28, 28, 25, 0.04);
+  --shadow-card-hover: 0 12px 40px rgba(28, 28, 25, 0.06);
+  --shadow-ambient: 0 20px 40px rgba(28, 28, 25, 0.04);
+}
+
+/* ============================================================
+   Base Styles — Editorial Organicism
+   ============================================================ */
+
+@layer base {
+  :root {
+    --background: #fcf9f4;
+    --foreground: #1c1c19;
+    --card: #ffffff;
+    --card-foreground: #2D2924;
+    --muted: #f0ede8;
+    --muted-foreground: #7D7468;
+    --border: rgba(194, 201, 187, 0.20); /* Ghost Border — outline_variant @ 20% */
+  }
+
+  .dark {
+    --background: #0D0B09;
+    --foreground: #EDE9E2;
+    --card: #1A1714;
+    --card-foreground: #DED8CE;
+    --muted: #2D2924;
+    --muted-foreground: #A39A8C;
+    --border: rgba(222, 216, 206, 0.08);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100dvh;
+  }
+
+  /* Safe area for notch devices */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Body text uses Inter for legibility */
+  p, span, label, input, textarea, select, button {
+    font-family: var(--font-body);
+  }
+
+  /* Headlines use Bricolage Grotesque for editorial authority */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+  }
+
+  /* Selection color — Forest Green */
+  ::selection {
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-900);
+  }
+
+  /* Focus ring — Forest Green */
+  :focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* ============================================================
+   Surface Tiers & Tonal Layering (Editorial Organicism)
+   Dybde via baggrundsfarveskift, ikke borders
+   ============================================================ */
+
+@layer utilities {
+  /* ── Surface Tiers ── erstatter borders med tonale skift */
+  .surface-lowest {
+    background-color: var(--color-surface-lowest);
+  }
+  .surface-low {
+    background-color: var(--color-surface-low);
+  }
+  .surface-base {
+    background-color: var(--color-surface);
+  }
+  .surface-container {
+    background-color: var(--color-surface-container);
+  }
+  .surface-high {
+    background-color: var(--color-surface-high);
+  }
+  .surface-highest {
+    background-color: var(--color-surface-highest);
+  }
+
+  .dark .surface-lowest { background-color: #151210; }
+  .dark .surface-low { background-color: #1A1714; }
+  .dark .surface-base { background-color: #0D0B09; }
+  .dark .surface-container { background-color: #1e1b17; }
+  .dark .surface-high { background-color: #252220; }
+  .dark .surface-highest { background-color: #2D2924; }
+
+  /* ── Glassmorphism — Warm tones + 20px blur ── */
+  .glass {
+    background: rgba(252, 249, 244, 0.70);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .dark .glass {
+    background: rgba(13, 11, 9, 0.70);
+  }
+
+  /* ── Ghost Border — outline_variant @ 20% opacity ── */
+  .ghost-border {
+    border: 1px solid rgba(194, 201, 187, 0.20);
+  }
+
+  .dark .ghost-border {
+    border: 1px solid rgba(222, 216, 206, 0.08);
+  }
+
+  /* Touch target enforcement — min 44x44px */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* ── Gradient CTAs ── */
+  .gradient-cta {
+    background: linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-accent-600) 100%);
+  }
+
+  /* Forest Gradient — premium primary CTA (Editorial Organicism) */
+  .gradient-forest {
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-fixed-dim) 100%);
+  }
+
+  /* ── Surface Warm — for elevated elements ── */
+  .surface-warm {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FBF9F6 100%);
+  }
+
+  .dark .surface-warm {
+    background: linear-gradient(180deg, #1A1714 0%, #151210 100%);
+  }
+
+  /* ── Shift Circle — organiske dekorative baggrundselementer ── */
+  .shift-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--color-primary-fixed);
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .shift-circle-lg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .shift-circle-md {
+    width: 120px;
+    height: 120px;
+  }
+
+  .shift-circle-sm {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* ── Growth Ring — Cirkulær ESG progress ── */
+  .growth-ring {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .growth-ring-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--color-primary-500) calc(var(--ring-progress, 0) * 1%),
+      var(--color-surface-highest) calc(var(--ring-progress, 0) * 1%)
+    );
+    mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #fff calc(100% - 11px));
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #fff calc(100% - 11px));
+  }
+
+  .growth-ring-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Achievement Badge ── */
+  .achievement-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.25rem;
+    border-radius: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .achievement-badge-unlocked {
+    background-color: var(--color-surface-lowest);
+    box-shadow: var(--shadow-card);
+  }
+
+  .achievement-badge-current {
+    background-color: var(--color-surface-lowest);
+    box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.3), var(--shadow-elevated);
+  }
+
+  .achievement-badge-locked {
+    background-color: var(--color-surface-high);
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+
+  /* ── No-Line | Editorial Surface ── */
+  .no-border {
+    border: none !important;
+  }
+
+  .surface-editorial {
+    background-color: var(--color-surface-low);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+/* ============================================================
+   Animations — Organic & Editorial
+   ============================================================ */
+
+@layer base {
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── ESG Gamification Animations ── */
+
+  @keyframes growTree {
+    from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+    to { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 0.8; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-30px); }
+  }
+
+  @keyframes progressFill {
+    from { width: 0%; }
+    to { width: var(--progress-width, 0%); }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(45, 90, 39, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(45, 90, 39, 0.4); }
+  }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
+  }
+
+  /* ── Shift Circle drift ── subtil bevægelse */
+  @keyframes driftSlow {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(8px, -6px) scale(1.05); }
+  }
+
+  /* ── ESG Growth Ring pulse ── */
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(45, 90, 39, 0.15); }
+    50% { box-shadow: 0 0 0 12px rgba(45, 90, 39, 0); }
+  }
+
+  /* ── Achievement badge shimmer ── */
+  @keyframes shimmerGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 140, 66, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(255, 140, 66, 0.4); }
+  }
+
+  /* ── Floating cloud ── */
+  @keyframes floatCloud {
+    0% { transform: translateX(-10%) translateY(0); opacity: 0.3; }
+    50% { transform: translateX(10%) translateY(-8px); opacity: 0.5; }
+    100% { transform: translateX(-10%) translateY(0); opacity: 0.3; }
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+
+  .animate-count-up {
+    animation: countUp 0.5s ease-out forwards;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      var(--color-surface-high) 50%,
+      var(--muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      var(--color-neutral-700) 50%,
+      var(--muted) 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  .animate-grow-tree {
+    animation: growTree 0.8s ease-out forwards;
+  }
+
+  .animate-float-up {
+    animation: floatUp 2s ease-out infinite;
+  }
+
+  .animate-progress-fill {
+    animation: progressFill 1.2s ease-out forwards;
+  }
+
+  .animate-glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .animate-sway {
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  .animate-drift {
+    animation: driftSlow 12s ease-in-out infinite;
+  }
+
+  .animate-ring-pulse {
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer-glow {
+    animation: shimmerGlow 2.5s ease-in-out infinite;
+  }
+
+  .animate-float-cloud {
+    animation: floatCloud 8s ease-in-out infinite;
+  }
+
+  /* Staggered animation delays */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+}

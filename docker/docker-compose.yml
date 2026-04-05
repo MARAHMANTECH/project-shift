@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: shift-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: project_shift
+      POSTGRES_USER: shift_user
+      POSTGRES_PASSWORD: shift_password
+    volumes:
+      - shift_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shift_user -d project_shift"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shift_pgdata:
+    driver: local

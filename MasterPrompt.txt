@@ -1,0 +1,93 @@
+# OPGAVE: Etablering af Projekt-Governance & Regelsæt (.rules)
+
+Du er Senior Software Arkitekt og AI-Strateg. Din opgave er at skabe en "Guardrail-struktur" for vores nye platform, med arbejdstitlen **"Project SHIFT"**.
+
+## TRIN 1: KONTEKSTUEL ANALYSE
+Gennemlæs README, Brain Dumps, og eksisterende arkitektur-noter. Identificer:
+1. **Multi-tenancy model:** Hvordan isolerer vi data mellem virksomheder (orgs)?
+2. **Kerne-logik:** Identificer ESG-beregningsmotoren og matching-algoritmen som kritiske zoner.
+3. **Tech-Stack:** Next.js (App Router), NestJS, PostgreSQL m. PostGIS, Prisma, Clerk Auth.
+
+## TRIN 2: GENERERING AF REGLER (.rules/)
+Opret følgende filer i `.rules/` mappen. Indholdet skal være instruktivt og tvingende (brug "MUST", "SHALL", "NEVER").
+
+### 1. `.rules/01-process.md` (Workflow Control)
+- **Architecture First:** Generér ALDRIG implementeringskode før en `IMPLEMENTATION_PLAN.md` er godkendt af brugeren.
+- **Source of Truth:** Start altid en session med at læse `SYSTEM_STATE.md`.
+- **Naming Placeholder:** Alt UI-tekst og referencer til produktnavnet SKAL hentes fra en central `APP_CONFIG` konstant. Brug værdien "Project SHIFT" indtil videre.
+
+### 2. `.rules/02-tech-standards.md` (Code Quality)
+- **TypeScript:** Strict mode, ingen 'any'. Brug interfaces til API-kontrakter.
+- **Geospatial:** Alle geografiske beregninger (afstande, rute-matches) SKAL ske via PostGIS (SQL) for præcision.
+- **Dansk UI:** Brugerfladen skal være på dansk (UTF-8). Variabler og kommentarer skal være på engelsk.
+- **File Limits:** Maks 250 linjer pr. fil. Split komponenter ved overskridelse.
+
+### 3. `.rules/03-multi-tenancy-security.md` (Data Safety)
+- **Tenant Isolation:** Enhver database-query SKAL inkludere `organization_id`. Foretag aldrig destruktive handlinger uden en `WHERE` klausul på organisationen.
+- **ESG Integrity:** Beregningslogik for CO2 skal isoleres i rene funktioner (pure functions) med tilhørende unit tests.
+
+### 4. `.rules/04-ui-ux.md` (Mobile-First)
+- **Design:** PWA-fokus (Progressive Web App). Mobil-først responsivitet.
+- **State:** Brug React Query til server-state og standardiseret fejlhåndtering i UI.
+
+## TRIN 3: ETABLERING AF "SYSTEM_STATE.md"
+Opret en fil i rodmappen: `SYSTEM_STATE.md`.
+- Denne fil skal indeholde: Aktuel Milestone, færdiggjorte filer, og "Next Steps".
+- **INSTRUKTION:** Opdatér denne fil efter hver afsluttet opgave/commit.
+
+---
+
+**INSTRUKTION:**
+Gå i gang med Trin 1 (Analyse) nu og præsenter dine fund. Derefter opretter du `.rules/` filerne og `SYSTEM_STATE.md`. Skriv ikke funktionel kode endnu.
+
+
+
+
+--- 
+
+# PROJEKT: Corporate Mobility & Community Platform (B2B SaaS)
+
+Du er Senior Software Arkitekt. Vi skal bygge en lukket platform for virksomheder, der kombinerer samkørsel, ESG-rapportering og event-booking.
+
+## 🧱 ARKITEKTUR-PRINCIPPER (SKAL OVERHOLDES)
+1. **Multi-tenancy:** Hver virksomhed (org) er totalt isoleret. Medarbejdere onboardes via e-mail domæne-validering (@virksomhed.dk).
+2. **Privacy-by-Design:** Ingen privatadresser. Systemet bruger "Meeting Points" (stationer, p-pladser, firma-hubs).
+3. **Modulær Betaling:** Betaling skal kunne deaktiveres pr. virksomhed. MVP understøtter gratis bytte-ordninger.
+4. **Teknologi:** Next.js (Frontend), NestJS (Backend), PostgreSQL m. PostGIS (Geo-data), Prisma (ORM).
+
+## 🗺️ SYSTEM DOMÆNER
+- **Auth:** SSO eller e-mail domain magic links.
+- **Ridesharing:** Matching af ruter mellem "Pick-up points" og arbejdsplads. 
+- **ESG Engine:** Beregning af sparet CO2 (Distance * (Bil_A - Bil_A/Passagerer)).
+- **Community:** Event-oprettelse og booking (med affiliate tracking til eksterne centre som Padel/Squash).
+
+## 🛠️ MILESTONES (IMPLEMENTERINGS-ETAPER)
+
+### Etape 1: Fundament & Org-Isolation
+- Opsæt monorepo.
+- Database-schema med `Organization`, `User` og `Role`.
+- Logik til auto-assignment af brugere til Org baseret på e-mail domæne.
+
+### Etape 2: Ridesharing MVP (Uden betaling)
+- Definer "Meeting Points" i databasen.
+- CRUD for "Køreture" (Chauffør sætter tid og opsamlingspunkt).
+- "Match-finder" query: Find kolleger der skal samme vej på samme tid (+/- 15 min).
+
+### Etape 3: ESG Dashboard & Tracking
+- Logik der trigger ved gennemførte ture.
+- HR Dashboard: Visualisering af akkumuleret CO2-besparelse.
+- PDF-eksport af ESG-nøgletal.
+
+### Etape 4: Community & Booking (Monetization)
+- Event-modul (Tilmelding/Venteliste).
+- "Partner-links": Tracking af kliks/bookings til eksterne Padel-centre.
+
+## 🧪 KRAV TIL KODE OG KVALITET
+- **Ingen kode uden arkitektur:** Start med at definere Prisma-schema og API-kontrakter (Typescript interfaces).
+- **Test-dækning:** 100% på ESG-beregninger og Matching-algoritmer.
+- **Deployment:** Skal kunne køre i Docker lokalt og være klar til Railway deployment (miljøvariable til DB og Auth).
+- **UI:** Tailwind CSS, mobil-først (PWA-klar).
+
+---
+**FØRSTE OPGAVE:**
+Analyser projektet og præsentér det foreslåede **Prisma Database Schema** og en **Projekt-mappestruktur**, der understøtter denne modulære opbygning. Vent på min godkendelse før du skriver backend-logik.

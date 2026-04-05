@@ -1,0 +1,36 @@
+{
+  "name": "project-shift",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate dev",
+    "db:push": "npx prisma db push",
+    "db:seed": "npx prisma db seed",
+    "db:studio": "npx prisma studio",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:sql": "docker compose -f docker/docker-compose.yml exec db psql -U postgres",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "packageManager": "npm@10.8.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

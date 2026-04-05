@@ -1,0 +1,21 @@
+{
+  "name": "@project-shift/esg-core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/src/index.js",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@project-shift/shared-types": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

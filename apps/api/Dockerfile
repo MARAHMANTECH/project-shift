@@ -80,5 +80,11 @@ USER nestjs
 EXPOSE 4000
 ENV HOSTNAME="0.0.0.0"
 
-# NestJS production start
-CMD ["node", "apps/api/dist/main.js"]
+# Prisma migrate + NestJS production start
+# Bruger shell-form så vi kan kæde kommandoer og se output
+CMD echo "[SHIFT] Starting API..." && \
+    echo "[SHIFT] PORT=$PORT" && \
+    echo "[SHIFT] NODE_ENV=$NODE_ENV" && \
+    echo "[SHIFT] DATABASE_URL set: $(test -n \"$DATABASE_URL\" && echo 'yes' || echo 'NO')" && \
+    npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1 || echo "[SHIFT] Prisma migrate skipped (no migrations or error)" && \
+    node apps/api/dist/main.js

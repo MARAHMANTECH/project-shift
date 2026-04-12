@@ -72,6 +72,10 @@ COPY prisma/ ./prisma/
 COPY package.json ./
 COPY apps/api/package.json ./apps/api/
 
+# Kopiér entrypoint script
+COPY apps/api/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 # Sæt korrekt ejerskab
 RUN chown -R nestjs:nestjs /app
 
@@ -80,11 +84,5 @@ USER nestjs
 EXPOSE 4000
 ENV HOSTNAME="0.0.0.0"
 
-# Prisma migrate + NestJS production start
-# Bruger shell-form så vi kan kæde kommandoer og se output
-CMD echo "[SHIFT] Starting API..." && \
-    echo "[SHIFT] PORT=$PORT" && \
-    echo "[SHIFT] NODE_ENV=$NODE_ENV" && \
-    echo "[SHIFT] DATABASE_URL set: $(test -n \"$DATABASE_URL\" && echo 'yes' || echo 'NO')" && \
-    npx prisma migrate deploy --schema=./prisma/schema.prisma 2>&1 || echo "[SHIFT] Prisma migrate skipped (no migrations or error)" && \
-    node apps/api/dist/main.js
+# Entrypoint med diagnostik + prisma migrate + NestJS start
+ENTRYPOINT ["./entrypoint.sh"]

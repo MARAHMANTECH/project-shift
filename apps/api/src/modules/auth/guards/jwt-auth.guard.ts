@@ -67,6 +67,12 @@ export class JwtAuthGuard implements CanActivate {
       token = sessionToken;
     }
 
+    if (!token) {
+      throw new UnauthorizedException(
+        "Manglende autorisering. Log ind for at fortsætte."
+      );
+    }
+
     return this.verifyAndSetUser(request, token);
   }
 

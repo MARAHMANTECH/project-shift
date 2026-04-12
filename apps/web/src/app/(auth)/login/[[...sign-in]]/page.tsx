@@ -1,137 +1,146 @@
+// Login Landing Page — ENVO IT-inspireret minimalisme × SoulEx æstetik
+// Én enkelt Microsoft SSO-knap, ingen email/password felter
+// Skjult credentials-fallback kan aktiveres via ENABLE_CREDENTIALS_LOGIN env
+
 "use client";
 
-import Image from "next/image";
-import { SignIn } from "@clerk/nextjs";
+import { signIn } from "next-auth/react";
+import { Leaf, Shield, ArrowRight, KeyRound } from "lucide-react";
 import { APP_CONFIG } from "@/config/app";
-import { Leaf } from "lucide-react";
 
-/**
- * Login Landing Page — "Editorial Organicism" + Clerk Auth
- * Bevarer det originale brand-design med:
- *   - Full-bleed watercolor illustration som baggrund
- *   - Glassmorphism login-kort (højre side på desktop, centreret på mobil)
- *   - Project SHIFT logo + headline
- *   - Clerk SignIn komponent med custom appearance der matcher brand-paletten
- *   - Social logins håndteres af Clerk (Google, Microsoft)
- */
-export default function LoginPage() {
+/** Microsoft Windows-logo som SVG */
+function MicrosoftLogo({ className }: { className?: string }): React.ReactElement {
   return (
-    <div className="relative min-h-dvh flex items-center justify-center lg:justify-end overflow-hidden">
-      {/* ── Full-bleed baggrunds-illustration ── */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/illustrations/login-hero.png"
-          alt="Dansk landskab med samkørende kollegaer, vindmøller og grønne bakker"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-          quality={90}
-        />
-        {/* Subtilt overlay for at sikre læsbarhed */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-white/30 lg:to-white/40" />
-        {/* Bund-gradient der blander ind i baggrunden */}
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
+    <svg className={className} viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="9.5" height="9.5" fill="#F25022" />
+      <rect x="11.5" y="0" width="9.5" height="9.5" fill="#7FBA00" />
+      <rect x="0" y="11.5" width="9.5" height="9.5" fill="#00A4EF" />
+      <rect x="11.5" y="11.5" width="9.5" height="9.5" fill="#FFB900" />
+    </svg>
+  );
+}
 
-      {/* ── Glassmorphism Login-kort ── */}
-      <div className="relative z-10 w-full max-w-md mx-4 lg:mr-[8%] lg:ml-auto animate-fade-in">
-        <div
-          className="rounded-3xl p-8 lg:p-10 shadow-elevated"
-          style={{
-            background: "rgba(255, 255, 255, 0.88)",
-            backdropFilter: "blur(24px) saturate(180%)",
-            WebkitBackdropFilter: "blur(24px) saturate(180%)",
-          }}
-        >
-          {/* ── Logo ── */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md">
-              <Leaf size={24} strokeWidth={1.5} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-neutral-900 leading-tight tracking-tight">
-                {APP_CONFIG.name.split(" ")[0]}
-              </h2>
-              <h2 className="text-xl font-bold text-primary-600 leading-tight tracking-tight -mt-0.5">
-                {APP_CONFIG.name.split(" ")[1]}
-              </h2>
-            </div>
-          </div>
+export default function LoginPage(): React.ReactElement {
+  const showCredentials = process.env.NEXT_PUBLIC_ENABLE_CREDENTIALS_LOGIN === "true";
 
-          {/* ── Headline ── */}
-          <h1 className="text-2xl lg:text-3xl font-bold text-neutral-900 text-center mb-8 leading-snug">
-            Log ind på din
-            <br />
-            arbejdsplads.
-          </h1>
+  function handleMicrosoftLogin(): void {
+    signIn("microsoft-entra-id", { callbackUrl: "/" });
+  }
 
-          {/* ── Clerk SignIn Komponent ── */}
-          <div className="clerk-signin-wrapper">
-            <SignIn
-              routing="path"
-              path="/login"
-              appearance={{
-                elements: {
-                  // Hovedcontainer
-                  rootBox: "w-full",
-                  cardBox: "w-full shadow-none",
-                  card: "!bg-transparent !shadow-none !p-0 !m-0 w-full",
-                  // Skjul Clerk's egen header (vi har vores egen)
-                  headerTitle: "hidden",
-                  headerSubtitle: "hidden",
-                  // Form felter — matcher Editorial Organicism
-                  formFieldInput:
-                    "!rounded-2xl !h-13 !text-sm !text-neutral-900 !placeholder-neutral-400 !transition-all !duration-200 !outline-none focus:!ring-2 focus:!ring-primary-500/40 focus:!shadow-md",
-                  formFieldLabel: "!text-sm !font-medium !text-neutral-700",
-                  // CTA-knap — gradient orange
-                  formButtonPrimary:
-                    "!w-full !h-13 !rounded-full !bg-gradient-to-r !from-accent-500 !to-accent-600 !text-white !font-bold !text-sm !shadow-lg hover:!shadow-xl hover:!scale-[1.02] active:!scale-[0.98] !transition-all !duration-200 !border-none",
-                  // Social buttons
-                  socialButtonsBlockButton:
-                    "!h-12 !rounded-2xl !shadow-sm hover:!shadow-md hover:!scale-105 active:!scale-95 !transition-all !duration-200",
-                  socialButtonsBlockButtonText: "!text-sm !font-medium",
-                  // Divider
-                  dividerLine: "!bg-neutral-200",
-                  dividerText: "!text-xs !text-neutral-400 !font-medium",
-                  // Footer
-                  footer: "hidden",
-                  footerAction: "hidden",
-                  // Links
-                  formFieldAction:
-                    "!text-sm !text-neutral-600 hover:!text-primary-600 !underline !underline-offset-2 !transition-colors",
-                  // Branding
-                  internal: "hidden",
-                },
-                layout: {
-                  socialButtonsPlacement: "bottom",
-                  showOptionalFields: false,
-                },
-              }}
-            />
-          </div>
-
-          {/* ── Tagline ── */}
-          <p className="text-center text-[10px] text-neutral-400 mt-8 leading-relaxed">
-            {APP_CONFIG.tagline}
-          </p>
+  return (
+    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12"
+      style={{
+        background: "linear-gradient(180deg, #F5F2ED 0%, #F0EDE8 50%, #EBE8E3 100%)",
+      }}
+    >
+      {/* Logo + Produktnavn */}
+      <div className="flex items-center gap-3 mb-4 animate-fade-in">
+        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md">
+          <Leaf size={24} strokeWidth={1.5} className="text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-neutral-900 leading-tight tracking-tight">
+            {APP_CONFIG.name.split(" ")[0]}
+          </h2>
+          <h2 className="text-xl font-bold text-primary-600 leading-tight tracking-tight -mt-0.5 italic">
+            {APP_CONFIG.name.split(" ")[1]}
+          </h2>
         </div>
       </div>
 
-      {/* ── Bund-badge (On mobile) ── */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 lg:bottom-6 lg:left-6 lg:translate-x-0">
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-neutral-700"
-          style={{
-            background: "rgba(255, 255, 255, 0.75)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-          }}
-        >
-          <Leaf size={14} className="text-primary-600" />
-          {APP_CONFIG.description.slice(0, 50)}…
+      {/* Subtitle */}
+      <p className="text-sm text-neutral-400 mb-10 text-center animate-fade-in" style={{ animationDelay: "100ms" }}>
+        {APP_CONFIG.description}
+      </p>
+
+      {/* Login-kort */}
+      <div
+        className="
+          w-full max-w-sm
+          bg-white/90 backdrop-blur-lg
+          rounded-3xl
+          p-8
+          shadow-[0_4px_24px_rgba(28,28,25,0.08)]
+          animate-fade-in-up
+        "
+        style={{ animationDelay: "150ms" }}
+      >
+        {/* Header med shield */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-2xl bg-primary-50 flex items-center justify-center">
+            <Shield size={20} strokeWidth={1.5} className="text-primary-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-neutral-900">Log ind</h1>
+            <p className="text-sm text-neutral-400">Med din Microsoft-konto</p>
+          </div>
         </div>
+
+        {/* Microsoft SSO Knap */}
+        <button
+          id="login-microsoft-btn"
+          onClick={handleMicrosoftLogin}
+          className="
+            w-full flex items-center justify-center gap-3
+            mt-6 px-6 py-4
+            rounded-2xl
+            bg-gradient-to-r from-primary-500 to-primary-600
+            text-white font-semibold text-sm
+            shadow-lg
+            hover:shadow-xl hover:scale-[1.02]
+            active:scale-[0.98]
+            transition-all duration-200
+            cursor-pointer
+            group
+          "
+        >
+          <MicrosoftLogo className="h-5 w-5" />
+          <span>Log ind med Microsoft</span>
+          <ArrowRight
+            size={18}
+            strokeWidth={2}
+            className="opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200"
+          />
+        </button>
+
+        {/* Hjælpetekst */}
+        <p className="text-xs text-neutral-400 text-center mt-4">
+          Brug din arbejds- eller skole-konto
+        </p>
+
+        {/* Skjult credentials-fallback */}
+        {showCredentials && (
+          <div className="mt-6 pt-5 border-t border-neutral-100">
+            <button
+              id="login-credentials-toggle"
+              onClick={() => signIn("credentials")}
+              className="
+                w-full flex items-center justify-center gap-2
+                px-4 py-3 rounded-xl
+                bg-neutral-50 text-neutral-500
+                text-sm font-medium
+                hover:bg-neutral-100 hover:text-neutral-700
+                transition-all duration-200
+                cursor-pointer
+              "
+            >
+              <KeyRound size={16} strokeWidth={1.5} />
+              Log ind med email
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Support-link */}
+      <p className="text-xs text-neutral-400 mt-8 animate-fade-in" style={{ animationDelay: "300ms" }}>
+        Brug for hjælp?{" "}
+        <a
+          href="mailto:support@projectshift.dk"
+          className="text-primary-600 hover:text-primary-700 font-medium hover:underline transition-colors"
+        >
+          Kontakt support
+        </a>
+      </p>
     </div>
   );
 }

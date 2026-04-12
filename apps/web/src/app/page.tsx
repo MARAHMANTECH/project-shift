@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +15,7 @@ import { AppShell } from "@/components/shell/app-shell";
 import { Car, Search, Leaf, Route, Users, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
-  const { user } = useUser();
+  const { data: session } = useSession();
   const { data: rides, isLoading: ridesLoading } = useRides();
   const { data: esg, isLoading: esgLoading } = useEsgSummary();
 
@@ -61,7 +61,7 @@ export default function HomePage() {
                     {greeting}
                   </p>
                   <h1 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
-                    {user?.firstName ?? "der"} 👋
+                    {session?.user?.name?.split(" ")[0] ?? "der"} 👋
                   </h1>
                 </div>
 

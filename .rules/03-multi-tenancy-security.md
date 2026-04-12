@@ -13,8 +13,9 @@
 - **MUST**: Tilfoej et databaseindeks paa `organization_id` for ALLE tabeller.
 
 ### Lag 2: Row-Level Security (RLS)
-- **MUST**: PostgreSQL RLS policies SKAL vaere aktive paa ALLE tenant-tabeller.
-- **MUST**: RLS policies SKAL filtrere paa `organization_id = current_setting('app.current_org_id')`.
+- **MUST**: PostgreSQL RLS policies SKAL være aktive på ALLE tenant-tabeller.
+- **MUST**: RLS policies SKAL filtrere på `organization_id = current_setting('app.current_org_id')`.
+- **MUST**: Nye tabeller SKAL altid oprettes med `ENABLE ROW LEVEL SECURITY` som en del af migreringsskriptet – dette er ikke en efterfølgende tilføjelse.
 - **NEVER**: Deaktiver ALDRIG RLS i production.
 
 ### Lag 3: Application Layer
@@ -63,6 +64,16 @@
 
 ## Backup & Rollback
 
-- **MUST**: Foer enhver destruktiv handling, opret backup af den aktuelle tilstand.
-- **MUST**: Backup-filer SKAL navngives med dato og tidspunkt (ISO 8601).
+- **MUST**: Før enhver destruktiv handling, opret backup af den aktuelle tilstand.
+- **MUST**: Backup-filer SKAL navngives efter standarden: `backup_<tabel>_<YYYY-MM-DD>_<HHmm>.<format>` og gemmes i en dedikeret `backups/`-mappe.
 - **MUST**: Dokumenter rollback-procedurer for alle kritiske operationer.
+
+## Session-Sikkerhedspolitik (SEC-SESSION-001)
+
+- **MUST**: Logout-proceduren SKAL være total og komplet. Ved logout destrueres:
+  1. Alle HTTP-only cookies relateret til auth
+  2. Al `localStorage`- og `sessionStorage`-data
+  3. Clerk's aktive sessions og tokens
+- **MUST**: Efter logout udføres et **hard redirect** (`window.location.href = '/sign-in'`) – aldrig en client-side router navigation.
+- **MUST**: Beskyttede sider SKAL serveres med `Cache-Control: no-store, no-cache, must-revalidate` headers via middleware.
+- **NEVER**: Brug ALDRIG `router.push()` til logout-redirect – cached state kan persistere.

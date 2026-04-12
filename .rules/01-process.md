@@ -17,6 +17,7 @@
 - **MUST**: Opdater `SYSTEM_STATE.md` efter HVER afsluttet opgave med: faerdiggjorte filer, aktuel milestone, og naeste skridt.
 - **MUST**: Opdater `ARCHITECTURE.md` naar nye moduler, services eller database-entiteter tilfojes.
 - **MUST**: Opdater `CHANGELOG.md` med alle aendringer i Semantic Versioning format.
+- **MUST**: Opdater `PROJECT_GOVERNANCE.md` når regler i `.rules/`-filer ændres, tilføjes eller fjernes. Governance-dokumentet er den samlede, læsbare oversigt og SKAL altid afspejle den aktuelle tilstand af alle `.rules/`-filer.
 
 ## Naming & Branding
 

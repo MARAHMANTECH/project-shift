@@ -45,7 +45,7 @@ COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/esg-core/package.json ./packages/esg-core/
 COPY prisma/ ./prisma/
 
-# Kun production dependencies
+# Kun production dependencies (prisma CLI inkluderet som prod dep for migrate deploy)
 RUN npm ci --omit=dev
 
 # ── Stage 4: Runner (minimal) ──
@@ -53,6 +53,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=4000
 
 # Opret non-root bruger for sikkerhed
 RUN addgroup --system --gid 1001 nestjs && \
@@ -77,7 +78,7 @@ RUN chown -R nestjs:nestjs /app
 USER nestjs
 
 EXPOSE 4000
-ENV API_PORT=4000
+ENV HOSTNAME="0.0.0.0"
 
 # NestJS production start
 CMD ["node", "apps/api/dist/main.js"]

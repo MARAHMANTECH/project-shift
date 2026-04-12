@@ -17,6 +17,7 @@ Denne fil fungerer som den ultimative visuelle guide for Project SHIFT. Alle UI-
   - Borders: Subtile borders (1px) med lav kontrast fremfor hårde sorte streger.
 - **Dybde:** - Brug Glassmorphism (Backdrop-blur) på overlays og navigation.
   - Soft Layered Shadows: Brug `shadow-xl` med lavere opacity for at skabe naturlig dybde.
+  - Tinted Shadows: Skygger SKAL have en let farvetoning (tinted) frem for neutral grå – dette bevarer dybdefølelsen uden visuelt at bryde den organiske æstetik.
 
 ## 3. TYPOGRAPHY & CONTENT
 - **Primary Font:** Satoshi eller Bricolage Grotesque (Moderne, venlig sans-serif).

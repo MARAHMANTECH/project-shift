@@ -1,25 +1,23 @@
 "use client";
 
-// AuthTokenProvider — kobler Clerk auth til API client
-// Sættes op i provider-hierarkiet så alle API-kald
-// automatisk inkluderer Clerk JWT i Authorization header
+// AuthTokenProvider — kobler NextAuth session til API client
+// Performance: Bruger session-data direkte fra memory (ingen HTTP-kald)
+// Token hentes fra useSession() → session.accessToken
 
 import { useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { setAuthTokenProvider } from "@/lib/api-client";
 
 export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
-  const { getToken } = useAuth();
+  const { data: session } = useSession();
 
   useEffect(() => {
+    // Sæt token-provider til at levere accessToken direkte fra session
+    // Ingen fetch() → ingen ekstra latency (0ms i stedet for 50-100ms)
     setAuthTokenProvider(async () => {
-      try {
-        return await getToken();
-      } catch {
-        return null;
-      }
+      return session?.accessToken ?? null;
     });
-  }, [getToken]);
+  }, [session]);
 
   return <>{children}</>;
 }

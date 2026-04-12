@@ -2,13 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Car, Leaf, Users } from "lucide-react";
+import { LayoutDashboard, Car, Leaf, Users, ScrollText } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard", id: "nav-dashboard" },
   { href: "/rides", icon: Car, label: "Køreture", id: "nav-rides" },
   { href: "/esg", icon: Leaf, label: "ESG", id: "nav-esg" },
   { href: "/community", icon: Users, label: "Fællesskab", id: "nav-community" },
+  { href: "/changelog", icon: ScrollText, label: "Historik", id: "nav-changelog" },
 ];
 
 export function BottomNav() {

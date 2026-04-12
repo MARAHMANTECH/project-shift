@@ -1,19 +1,18 @@
 // Authenticated fetch wrapper
 // Tilføjer automatisk Authorization: Bearer <token> header til API-kald
-// Bruger Clerk's useAuth().getToken() til at hente session-token
+// Bruger NextAuth session til at hente auth-token
 
 import { APP_CONFIG } from "@/config/app";
 
 /**
- * Opret en authenticated fetch-funktion med Clerk session token.
+ * Opret en authenticated fetch-funktion med session token.
  *
- * @param getToken - Clerk's getToken funktion fra useAuth() hook
+ * @param getToken - Token-provider funktion (fra NextAuth session)
  * @returns En fetch wrapper der automatisk tilføjer auth headers
  *
  * @example
  * ```tsx
- * const { getToken } = useAuth();
- * const fetchWithAuth = createAuthFetch(getToken);
+ * const fetchWithAuth = createAuthFetch(async () => session?.accessToken ?? null);
  * const data = await fetchWithAuth("/api/v1/rides");
  * ```
  */
@@ -55,15 +54,15 @@ export function createAuthFetch(
 
 /**
  * Server-side authenticated fetch (til brug i Server Components / Route Handlers).
- * Bruger Clerk's auth() helper direkte.
+ * Bruger NextAuth's auth() helper direkte.
  *
  * @example
  * ```tsx
- * import { auth } from "@clerk/nextjs/server";
+ * import { auth } from "@/lib/auth";
  *
  * export default async function ServerPage() {
- *   const { getToken } = await auth();
- *   const fetchWithAuth = createAuthFetch(getToken);
+ *   const session = await auth();
+ *   const fetchWithAuth = createAuthFetch(async () => null);
  *   const data = await fetchWithAuth("/api/v1/rides");
  * }
  * ```

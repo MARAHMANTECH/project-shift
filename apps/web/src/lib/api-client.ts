@@ -1,5 +1,5 @@
 // API client for Project SHIFT
-// Wraps fetch with base URL, error handling, and Clerk auth token injection
+// Wraps fetch with base URL, error handling, and NextAuth token injection
 // Per .rules/04: NEVER use useEffect + fetch. Use React Query hooks.
 
 import { APP_CONFIG } from "@/config/app";
@@ -42,7 +42,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 /**
  * Auth token provider — sættes af AuthTokenProvider komponenten
- * så alle API-kald automatisk inkluderer Clerk JWT
+ * så alle API-kald automatisk inkluderer NextAuth JWT
  */
 let _getToken: (() => Promise<string | null>) | null = null;
 
@@ -55,7 +55,7 @@ async function buildHeaders(init?: RequestInit): Promise<HeadersInit> {
     "Content-Type": "application/json",
   };
 
-  // Inject Clerk auth token
+  // Inject auth token fra NextAuth session
   if (_getToken) {
     try {
       const token = await _getToken();

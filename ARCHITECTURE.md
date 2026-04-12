@@ -64,7 +64,7 @@
 
 ---
 
-## Database Entiteter (15 modeller)
+## Database Entiteter (17 modeller)
 
 ### Domæne 1: Auth & Organization
 | Model | Formaal | Tenant-scoped |
@@ -93,6 +93,12 @@
 | `EventAttendee` | Tilmeldinger | Via Event |
 | `PartnerLink` | Affiliate-links | Ja |
 | `PartnerClick` | Klik-tracking | Via PartnerLink |
+
+### Domæne 9: Changelog & Feedback
+| Model | Formaal | Tenant-scoped |
+|-------|---------|---------------|
+| `Changelog` | Versionshistorik og build-noter | Nej (global) |
+| `Feedback` | Bruger-indmeldinger og feature requests | Ja |
 
 ### System
 | Model | Formaal | Tenant-scoped |
@@ -137,7 +143,9 @@ CO2_sparet (kg) = distance_km * emission_factor * (1 - 1 / total_occupants)
 - **Prefix:** `/api/v1/`
 - **Format:** RESTful, JSON
 - **Fejl:** RFC 7807 Problem Details
-- **Auth:** Clerk JWT i `Authorization: Bearer <token>`
+- **Auth:** NextAuth.js JWT i `Authorization: Bearer <token>` eller session cookie
+- **Auth Provider:** Microsoft Entra ID (multi-tenant) via NextAuth.js — JWT verificeres med `jose` library
+- **Credentials Fallback:** Skjult email/password provider (aktiveres via `ENABLE_CREDENTIALS_LOGIN=true`)
 - **Tenant:** Udtrukket fra JWT `organizationId` claim
 - **Response budget:** < 300ms
 
@@ -174,6 +182,13 @@ Dybde opnås via baggrundsfarveskift, IKKE borders (No-Line Rule):
 | Input | `input.tsx` | Input, SelectInput, TextareaInput |
 | PersonalityBadge | `personality-badge.tsx` | music, talkative, quiet, luggage, pet-friendly |
 | Badge | `badge.tsx` | success, warning, error, neutral |
+| ChangelogStats | `changelog-stats.tsx` | — |
+| ChangelogFilters | `changelog-filters.tsx` | — |
+| ChangelogTimeline | `changelog-timeline.tsx` | — |
+| FeedbackStats | `feedback-stats.tsx` | — |
+| FeedbackCard | `feedback-card.tsx` | — |
+| FeedbackModal | `feedback-modal.tsx` | — |
+| FeedbackFilters | `feedback-filters.tsx` | — |
 
 ### Governance
 Alle UI-ændringer SKAL overholde `.rules/05-branding.md`.
@@ -190,12 +205,12 @@ Project_SHIFT/
 ├── packages/
 │   ├── shared-types/ # TypeScript interfaces
 │   └── esg-core/     # ESG pure functions + tests
-├── prisma/           # Schema + migrations
+├── prisma/           # Schema + migrations (17 modeller)
 ├── docker/           # Local dev + production
 └── .rules/           # Governance
 ```
 
 ---
 
-> **Sidst opdateret:** 2026-04-01T12:25:00+02:00
-> **Version:** v0.5.0 (M3: SoulEx UI/UX Transformation)
+> **Sidst opdateret:** 2026-04-10T21:57:00+02:00
+> **Version:** v1.1.0 (Auth Migrering: Clerk → NextAuth.js + Entra ID)

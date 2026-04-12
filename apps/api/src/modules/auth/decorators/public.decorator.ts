@@ -1,5 +1,5 @@
 // @Public() decorator — markerer endpoints som offentlige (ingen auth krævet)
-// Bruges med ClerkAuthGuard til at bypasse autentificering på specifikke endpoints
+// Bruges med JwtAuthGuard til at bypasse autentificering på specifikke endpoints
 
 import { SetMetadata } from "@nestjs/common";
 

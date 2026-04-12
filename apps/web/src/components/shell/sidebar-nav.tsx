@@ -2,9 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { UserButton, useUser } from "@clerk/nextjs";
 import { APP_CONFIG } from "@/config/app";
-import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users } from "lucide-react";
+import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText } from "lucide-react";
+import { UserMenu } from "./user-menu";
 
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Hjem", id: "sidebar-dashboard" },
@@ -13,11 +13,11 @@ const NAV_ITEMS = [
   { href: "/rides/new", icon: PlusCircle, label: "Opret tur", id: "sidebar-new-ride" },
   { href: "/esg", icon: Leaf, label: "ESG Rapport", id: "sidebar-esg" },
   { href: "/community", icon: Users, label: "Fællesskab", id: "sidebar-community" },
+  { href: "/changelog", icon: ScrollText, label: "Historik", id: "sidebar-changelog" },
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { user } = useUser();
 
   return (
     <aside
@@ -87,28 +87,10 @@ export function SidebarNav() {
         })}
       </nav>
 
-      {/* User section — Clerk UserButton med brugerdata */}
+      {/* User section — Custom UserMenu */}
       <div className="p-4">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:surface-container transition-all duration-200">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-9 w-9",
-                userButtonTrigger: "focus:shadow-none",
-              },
-            }}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[var(--foreground)] truncate">
-              {user?.firstName ?? ""} {user?.lastName ?? ""}
-            </p>
-            <p className="text-xs text-[var(--muted-foreground)] truncate">
-              {user?.primaryEmailAddress?.emailAddress ?? ""}
-            </p>
-          </div>
-        </div>
+        <UserMenu />
       </div>
     </aside>
   );
 }
-

@@ -6,10 +6,10 @@
 ---
 
 ## Aktuel Version
-`v0.9.0` - M5: Railway Deployment Infrastructure
+`v0.6.6` - M6: Entra ID Integration & Speed Optimization
 
 ## Aktuel Milestone
-**M5: Railway Deployment** ✅ Infrastruktur klar
+**M6: Auth Migration** ✅ Clerk → NextAuth.js + Microsoft Entra ID
 
 ## Status
 | Omraade | Status |
@@ -30,11 +30,11 @@
 | APP_CONFIG central branding | ✅ Færdig |
 | PWA manifest | ✅ Færdig |
 | Design system tokens (CSS) | ✅ Færdig |
-| Auth (Clerk) integration | ✅ Færdig |
-| Clerk middleware (route protection) | ✅ Færdig |
-| ClerkAuthGuard (JWT-verifikation) | ✅ Færdig |
-| Bruger-sync (3-trins fallback) | ✅ Færdig |
-| AuthTokenProvider (auto JWT) | ✅ Færdig |
+| Auth (NextAuth.js + Entra ID) | ✅ Færdig |
+| NextAuth middleware (route protection) | ✅ Færdig |
+| JwtAuthGuard (jose JWT-verifikation) | ✅ Færdig |
+| JIT Provisioning (email-domain → org) | ✅ Færdig |
+| AuthTokenProvider (instant token) | ✅ Færdig |
 | npm install + verify build | ✅ Færdig |
 | UI Design System (Brand Identity) | ✅ Færdig |
 | Stitch MCP Design-koncepter (3 screens) | ✅ Færdig |
@@ -51,6 +51,10 @@
 | Railway konfiguration | ✅ Færdig |
 | Health endpoint (/api/v1/health) | ✅ Færdig |
 | CORS produktion (Railway regex) | ✅ Færdig |
+| Prisma v6 pinning (forhindrer v7-opgradering) | ✅ Bugfix |
+| Railway $PORT-binding (EFFECTIVE_PORT) | ✅ Bugfix |
+| DATABASE_URL fleksibel validering | ✅ Bugfix |
+| prisma CLI som prod dep (migrate deploy) | ✅ Bugfix |
 | Git repository | ✅ Initialiseret |
 
 ## Færdiggjorte Filer
@@ -107,7 +111,7 @@
 | Frontend | Next.js 15 (App Router), React 19, TypeScript 5 |
 | Backend API | NestJS 11 |
 | Styling | Tailwind CSS 4 |
-| Auth | Clerk Auth v7 (@clerk/nextjs + @clerk/backend) |
+| Auth | NextAuth.js v5 + Microsoft Entra ID (multi-tenant) |
 | ORM | Prisma 6 + PostGIS |
 | Database | PostgreSQL 16 + PostGIS 3.4 |
 | Payments | Stripe Connect (Etape 4, deaktiveret) |
@@ -115,29 +119,19 @@
 | Monorepo | Turborepo + npm workspaces |
 | Testing | Vitest |
 
-## Næste Skridt
-
-1. **M5: End-to-End Test & Deploy**
-   - [ ] Start Docker + DB: `npm run docker:up && npm run db:push && npm run db:seed`
-   - [ ] Start API: `cd apps/api && npm run dev`
-   - [ ] Start frontend på port 3001: `cd apps/web && npx next dev --port 3001`
-   - [ ] Browser-test: login → dashboard → opret tur → se ture
-   - [ ] Opret testbruger i Clerk Dashboard med `@acme-denmark.dk` e-mail
-   - [ ] Verificer bruger-sync (auto-match via e-mail-domæne)
-   - [ ] Railway production deployment
-
-2. **M2: Core Engine** (stadig udestående)
+1. **M2: Core Engine** (stadig udestående)
    - [ ] Frontend ↔ Backend integration (fjern mock-data)
    - [ ] Rute-matching med PostGIS i frontend
    - [ ] Match-Score algoritme (frontend-visning)
 
-3. **Færdiggjorte Milestones**
+2. **Færdiggjorte Milestones**
    - [x] M3: UI/UX Transformation
    - [x] M3.5: UI/UX Premium (Editorial Organicism v2)
-   - [x] M4: Clerk Auth Integration
+   - [x] M4: Clerk Auth Integration (afløst af M6)
    - [x] M5: Railway Deployment Infrastructure
+   - [x] M6: Auth Migration (Clerk → NextAuth.js + Entra ID)
 
 ---
 
-> **Sidst opdateret**: 2026-04-05T21:05:00+02:00
-> **Opdateret af**: AI Agent (M5 Railway Deployment)
+> **Sidst opdateret**: 2026-04-11T00:16:00+02:00
+> **Opdateret af**: AI Agent (v0.6.6 Auth Migration & Performance)

@@ -41,11 +41,19 @@
 
 ## UX Principper
 
-- **MUST**: Alle sider SKAL bestaa "The 5-second test" - en ny bruger SKAL kunne forstaa formålet inden for 5 sekunder.
-- **MUST**: Brug ikoner kombineret med klar dansk tekst. Ikoner alene er utilstraekkelige.
-- **MUST**: Fejlbeskeder SKAL vaere paa dansk, venlige, og handlingsrettede ("Proev igen" ikke bare "Fejl").
+- **MUST**: Alle sider SKAL bestå "The 5-second test" - en ny bruger SKAL kunne forstå formålet inden for 5 sekunder.
+- **MUST**: Brug ikoner kombineret med klar dansk tekst. Ikoner alene er utilstrækkelige.
+- **MUST**: Fejlbeskeder SKAL være på dansk, venlige, og handlingsrettede ("Prøv igen" ikke bare "Fejl").
 - **MUST**: Loading states SKAL vises med skeleton screens, ikke spinnere.
 - **MUST**: Tomme tilstande SKAL have illustrationer og opfordringer til handling.
+- **MUST**: Kritiske handlingssider SKAL præsentere maksimalt **3-5 primære valgmuligheder** synligt. Yderligere funktionalitet foldes ind i kontekstmenuer.
+
+## Destruktive Handlinger i UI
+
+- **MUST**: Enhver destruktiv handling (sletning, arkivering, afmelding, masseopdatering) SKAL ledsages af en bekræftelsesdialog (`ConfirmDialog`).
+- **MUST**: Dialogen SKAL tydeligt beskrive konsekvensen på forståeligt dansk og tilbyde en tydelig "Annuller"-mulighed.
+- **MUST**: Den destruktive handlingsknap SKAL visuelt signalere fare (dæmpet rød tone – aldrig ren rød, jf. branding-reglerne).
+- **NEVER**: Udfør ALDRIG destruktive handlinger med et enkelt klik uden bekræftelse.
 
 ## Feature Flags & Modulaer UI
 
@@ -53,9 +61,10 @@
 - **MUST**: Deaktiverede moduler SKAL skjules fra navigation - vis ikke "laaste" features.
 - **NEVER**: Vis ALDRIG data fra et modul som organisationen ikke har adgang til.
 
-## Tilgaengelighed (a11y)
+## Tilgængelighed (a11y)
 
 - **MUST**: Alle interaktive elementer SKAL have unikke, beskrivende `id`-attributter.
 - **MUST**: Farvekontrast SKAL overholde WCAG 2.1 AA (minimum 4.5:1 for tekst).
 - **MUST**: Alle billeder SKAL have `alt`-tekst.
 - **MUST**: Formularer SKAL have associerede `<label>`-elementer.
+- **MUST**: Brødtekst SKAL have en minimum font-størrelse på **16px** for at sikre læsbarhed på mobile enheder og tablets.

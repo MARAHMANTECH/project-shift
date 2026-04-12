@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import { daDK } from "@clerk/localizations";
+import { SessionProvider } from "next-auth/react";
 import { APP_CONFIG } from "@/config/app";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthTokenProvider } from "@/components/providers/auth-token-provider";
@@ -44,12 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider
-      localization={daDK}
-      signInUrl="/login"
-      signUpUrl="/sign-up"
-      afterSignOutUrl="/login"
-    >
+    <SessionProvider>
       <html lang="da" className={bricolage.variable} suppressHydrationWarning>
         <body className="font-sans">
           <QueryProvider>
@@ -57,6 +51,6 @@ export default function RootLayout({
           </QueryProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </SessionProvider>
   );
 }

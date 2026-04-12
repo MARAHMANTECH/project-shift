@@ -1,10 +1,12 @@
-// NestJS entry point
+// NestJS entry point — Project SHIFT API
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { envConfig } from "./common/config/env.validation";
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true, // Nødvendig for Svix webhook signatur-verifikation
+  });
 
   // Enable CORS for frontend — understøtter Railway + lokal udvikling
   const allowedOrigins: (string | RegExp)[] = [
@@ -24,9 +26,15 @@ async function bootstrap(): Promise<void> {
   // Global prefix for all API routes
   app.setGlobalPrefix("api/v1");
 
-  const port = envConfig.API_PORT;
+  // Brug EFFECTIVE_PORT — Railway $PORT har prioritet over $API_PORT
+  const port = envConfig.EFFECTIVE_PORT;
   await app.listen(port);
-  console.log(`[API] Project SHIFT API running on port ${port}`);
+
+  console.log(`[API] ✅ Project SHIFT API kører`);
+  console.log(`[API]    Port: ${port}`);
+  console.log(`[API]    Env:  ${envConfig.NODE_ENV}`);
+  console.log(`[API]    Health: http://0.0.0.0:${port}/api/v1/health`);
 }
 
 bootstrap();
+

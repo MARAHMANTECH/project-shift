@@ -1,10 +1,10 @@
 // Authenticated user interface
-// Matches Clerk JWT claims structure for future integration
+// Maps to NextAuth JWT claims + Entra ID profile data
 
 export interface AuthenticatedUser {
   /** Internal database user ID */
   id: string;
-  /** Clerk external auth ID (or dev placeholder) */
+  /** External auth ID (Entra ID oid or dev placeholder) */
   externalAuthId: string;
   /** User email */
   email: string;

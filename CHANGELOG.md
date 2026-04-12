@@ -5,7 +5,185 @@ Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
 ---
 
-## [0.9.0] - 2026-04-05
+## [1.1.0] - 2026-04-10
+
+### Auth Migrering — Clerk → NextAuth.js + Microsoft Entra ID
+
+Komplet erstatning af Clerk auth med NextAuth.js og Microsoft Entra ID (Azure AD) som primær SSO-provider. Inspireret af ENVO IT's Lifecycle Portal.
+
+#### Fjernet
+- **3 Clerk NPM-pakker:** `@clerk/nextjs`, `@clerk/localizations`, `@clerk/backend`
+- **4 Clerk backend-filer:** `ClerkService`, `ClerkModule`, `ClerkWebhookController`, `ClerkWebhookService`
+- **Clerk afhængighed:** Al webhook-baseret bruger-sync er erstattet af NextAuth callbacks
+- **6 Clerk env-variabler** (publishable key, secret key, webhook secret, sign-in/up URLs)
+
+#### Tilføjet
+- **NextAuth.js v5** (Auth.js) med Microsoft Entra ID provider
+- **Multi-tenant SSO:** `issuer: common` tillader alle Azure AD tenants at logge ind
+- **JIT Provisioning:** NextAuth `signIn` callback opretter brugere via email-domain → Organization matching
+- **jose** library til JWT-verificering i NestJS backend (erstatter `@clerk/backend`)
+- **`JwtAuthGuard`** — erstatter `ClerkAuthGuard` med standard JWT-verifikation
+- **Custom `UserMenu`** komponent — erstatter Clerks `<UserButton>` med SoulEx-æstetik
+- **Skjult credentials-fallback** — aktiverbar via `ENABLE_CREDENTIALS_LOGIN=true` for kunder uden Microsoft
+
+#### Ændret — Login-side
+- **ENVO IT-inspireret redesign:** Minimalistisk login med én Microsoft SSO-knap
+- Fjernet: Watercolor illustration, glassmorphism, email/password felter, Google SSO
+- Tilføjet: Shield trust-ikon, "Brug din arbejds- eller skole-konto" hjælpetekst, supportlink
+- Resultat: Login-side reduceret fra 4.55 kB → 2.88 kB (~37% mindre)
+
+#### Ændret — Frontend (9 filer)
+- `layout.tsx`: `ClerkProvider` → `SessionProvider`
+- `middleware.ts`: `clerkMiddleware` → NextAuth `auth()` middleware
+- `auth-token-provider.tsx`: Clerk `getToken()` → NextAuth session
+- `page.tsx`: `useUser()` → `useSession()`
+- `sidebar-nav.tsx`: Clerk `UserButton` → Custom `UserMenu`
+- `app-shell.tsx`: Fjernet Clerk imports
+- `admin/super/page.tsx`: `useAuth/useUser` → `useSession`
+
+#### Ændret — Backend (4 filer)
+- `jwt-auth.guard.ts`: Ny guard med `jose` JWT-verificering (erstatter ClerkAuthGuard)
+- `auth.module.ts`: Fjernet webhook-controllere, tilføjet JwtAuthGuard
+- `app.module.ts`: Fjernet ClerkModule
+- `env.validation.ts`: `CLERK_SECRET_KEY` → `NEXTAUTH_SECRET`
+
+#### Nye env-variabler
+```
+AZURE_AD_CLIENT_ID=...
+AZURE_AD_CLIENT_SECRET=...
+AZURE_AD_TENANT_ID=...
+NEXTAUTH_SECRET=...
+NEXTAUTH_URL=...
+ENABLE_CREDENTIALS_LOGIN=false
+```
+
+---
+
+## [1.0.0] - 2026-04-09
+
+### Changelog & Feedback Modul — "Historik & Indmeldinger"
+
+Fuldt integreret system til versionshistorik (Changelog) og bruger-feedback (Indmeldinger), inspireret af ENVO IT's Lifecycle Portal, tilpasset Project SHIFT's SoulEx-designmanual og multi-tenant arkitektur.
+
+#### Database Schema (Prisma)
+- **2 nye modeller:** `Changelog`, `Feedback`
+- **5 nye enums:** `ChangelogType` (FEATURE/FIX/IMPROVEMENT), `FeedbackType` (BUG/FEATURE/IMPROVEMENT), `FeedbackStatus` (NEW/UNDER_REVIEW/PLANNED/IN_BUILD/DONE), `FeedbackPriority` (LOW/MEDIUM/HIGH)
+- **11 nye indexes** for performance på version_build, type, status, organizationId
+- Nye relationer: `Organization.feedbacks[]`, `User.feedbacks[]`
+- `Changelog.organizationId` er optional — Super Admin opretter globale entries
+- `Feedback.isGlobal` tillader cross-tenant synlighed
+- `Feedback.changelogId` linker lukkede indmeldinger til changelog-entries
+
+#### Backend — Changelog Module
+- **`ChangelogController`** — 6 REST endpoints under `/api/v1/changelog`
+- **`ChangelogService`** — CRUD + aggregerede statistikker med filtrering
+- Zod-validerede DTOs med danske fejlbeskeder
+- Alle kan læse, ORG_ADMIN/SUPER_ADMIN kan oprette/redigere, kun SUPER_ADMIN kan slette
+- Auto-sæt `publishedAt` ved publicering
+
+#### Backend — Feedback Module
+- **`FeedbackController`** — 7 REST endpoints under `/api/v1/feedback`
+- **`FeedbackService`** — Tenant-scoped CRUD med `organizationId`-filter + `isGlobal`-support
+- `PATCH /feedback/:id/resolve` — Marker som udført + optional auto-opret changelog-entry
+- Ejerskabstjek: Kun ejer eller SUPER_ADMIN kan slette indmeldinger
+- Brugerdata inkluderet i responses (firstName, lastName, avatarUrl)
+
+#### Frontend — React Query Hooks
+- **`use-changelog.ts`** — `useChangelogs()`, `useChangelogStats()`, `useCreateChangelog()`
+- **`use-feedback.ts`** — `useFeedbacks()`, `useFeedbackStats()`, `useCreateFeedback()`, `useUpdateFeedbackStatus()`, `useDeleteFeedback()`
+- Query key factories med typed responses og optimistisk cache-invalidering
+
+#### Frontend — Changelog Komponenter
+- **`ChangelogStats`** — 4 farvekodede stats-kort (Releases, Features, Rettelser, Forbedringer) med venstre accent-linjer
+- **`ChangelogFilters`** — Søgebar + pill-shaped type-filter tags (Alle/Feature/Fix/Forbedring)
+- **`ChangelogTimeline`** — Vertikal build-timeline med ekspanderbare BuildGroups, Forest Green dots, type-badges og staggered animationer
+
+#### Frontend — Feedback Komponenter
+- **`FeedbackStats`** — 5 stats-kort (Aktive, Fejl, Features, Forbedringer, I Build) med farve-accent
+- **`FeedbackFilters`** — Søgebar + status-dropdown + "Ny indmelding" CTA-knap
+- **`FeedbackCard`** — Feedback-kort med type-ikon, status/prioritet-badges, brugernavn og alder (8d/3t)
+- **`FeedbackModal`** — SoulEx glassmorphism-modal med type-selector (pill-cards), prioritet-radios, validerede inputs
+
+#### Routing & Navigation
+- **Ny rute:** `/dashboard/changelog` med pill-shaped tab-navigation (Changelog / Indmeldinger)
+- **SidebarNav:** Nyt "Historik" item med ScrollText-ikon (efter Fællesskab)
+- **BottomNav:** Nyt "Historik" item for mobilnavigation
+- Build-nummer badge i page header (# Build 834-stil)
+
+#### Design (SoulEx Compliance)
+- **No-Line Rule:** Hierarki via baggrundsskift (#F5F2ED → #F0EDE8) og bløde skygger
+- **Pill-shaped:** Alle tabs, filter-tags og knapper med min 16px radius
+- **Tonal Layering:** surface-lowest → surface-container → surface-high progression
+- **Animationer:** fadeInUp, scaleIn, countUp staggered delays
+- **Glassmorphism:** Modal overlay med backdrop-blur
+- **Dansk UI:** Al tekst på dansk med æ, ø, å
+
+#### Governance
+- `ARCHITECTURE.md` opdateret: 17 modeller, Domæne 9, 7 nye UI-komponenter
+- Alle endpoints overholder multi-tenancy governance (`.rules/03-multi-tenancy-security.md`)
+- Alle komponenter overholder branding (`.rules/05-branding.md`)
+
+---
+
+## [0.9.2] - 2026-04-09
+
+### Governance-Opgradering — MediStock Best-Practices Integration
+
+Integreret 12 nye regler fra MediStock.dk's governance-framework i Project SHIFTs regelsæt. Gapanalyse, konflikt-tjek og integration gennemført af Senior System Arkitekt.
+
+#### Nye Regler i `.rules/02-tech-standards.md`
+- **Eksplicitte returtyper**: Påkrævet på alle funktioner og metoder.
+- **Funktionslængde (SRP)**: Maks 40 linjer pr. funktion. Supplerer eksisterende 250-linjers filgrænse.
+- **`default export` forbudt**: Named exports obligatorisk (undtaget Next.js App Router-filer).
+- **Adapter Pattern**: Tredjepartsintegrationer SKAL implementeres via adapter-mønsteret.
+- **Dato-formatering**: Dansk format (`DD-MM-ÅÅÅÅ`) i UI, ISO 8601 internt.
+- **Brugervenlige fejlmeddelelser**: Stack traces og systemdetaljer må aldrig eksponeres mod slutbrugeren.
+
+#### Nye Regler i `.rules/03-multi-tenancy-security.md`
+- **RLS ved oprettelse**: `ENABLE ROW LEVEL SECURITY` er nu obligatorisk i migreringsskripter.
+- **SEC-SESSION-001**: Komplet session-destruktion ved logout (cookies, localStorage, tokens, hard redirect).
+- **Cache-Control**: Beskyttede sider serveres med `no-store, no-cache, must-revalidate` headers.
+- **Backup-navngivning**: Standardiseret format: `backup_<tabel>_<YYYY-MM-DD>_<HHmm>.<format>`.
+
+#### Nye Regler i `.rules/04-ui-ux.md`
+- **ConfirmDialog**: Bekræftelsesdialog obligatorisk ved alle destruktive UI-handlinger.
+- **Kognitiv belastning**: Maks 3-5 primære valgmuligheder synligt pr. handlingsside.
+- **Minimum font-størrelse**: 16px for brødtekst (tilgængelighed på mobile enheder).
+
+#### Nye Regler i `.rules/05-branding.md`
+- **Tinted Shadows**: Skygger skal have farvetoning frem for neutral grå.
+
+#### Governance-dokument
+- **`PROJECT_GOVERNANCE.md`**: Fuldt opgraderet med alle 12 nye regler elegant integreret.
+
+---
+
+## [0.9.1] - 2026-04-09
+
+### M5.1: Railway Deployment Bugfixes
+
+### Governance & AI Rules
+- **`.rules/02-tech-standards.md`**: Tilføjet streng sektion `Authentication (Clerk)` med eksplicitte NEVER-regler for at forhindre fremtidig generering af forældet Clerk kode (Pages router, authMiddleware, etc.).
+
+#### Prisma Version Pinning (Kritisk)
+- **`package.json`**: Pin `prisma@^6.5.0` som devDependency i root — forhindrer auto-opgradering til Prisma 7 via `npx`
+- **`package.json`**: Ændr alle `npx prisma` scripts til `prisma` — bruger lokal installation i stedet for npx resolution
+- **`apps/api/package.json`**: Flyt `prisma@^6.5.0` til `dependencies` — nødvendig for Railway `startCommand` (migrate deploy)
+
+#### API Port-binding (Railway-kompatibilitet)
+- **`apps/api/src/common/config/env.validation.ts`**: Tilføj `PORT` env var (Railway standard) med prioritet over `API_PORT`
+- **`apps/api/src/common/config/env.validation.ts`**: Tillad `postgres://` prefix i DATABASE_URL (Railway-format)
+- **`apps/api/src/common/config/env.validation.ts`**: Tilføj `EFFECTIVE_PORT` computed property
+- **`apps/api/src/main.ts`**: Brug `EFFECTIVE_PORT` for korrekt Railway port-binding
+- **`apps/api/Dockerfile`**: Sæt `ENV PORT=4000` og `HOSTNAME=0.0.0.0` for Railway-detektion
+
+#### Railway Konfiguration
+- **`apps/api/railway.json`**: Fjern `npx` fra startCommand, tilføj `healthcheckTimeout: 120`, reducer max retries
+- **`package.json`**: Opdatér engines til `node >= 22.0.0` (matcher Dockerfile base image)
+
+---
+
+
 
 ### M5: Railway Deployment Infrastructure
 

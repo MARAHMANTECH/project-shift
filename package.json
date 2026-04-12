@@ -11,18 +11,19 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
-    "postinstall": "npx prisma generate",
-    "db:generate": "npx prisma generate",
-    "db:migrate": "npx prisma migrate dev",
-    "db:push": "npx prisma db push",
-    "db:seed": "npx prisma db seed",
-    "db:studio": "npx prisma studio",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.yml down",
     "docker:sql": "docker compose -f docker/docker-compose.yml exec db psql -U postgres",
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
+    "prisma": "^6.5.0",
     "tsx": "^4.21.0",
     "turbo": "^2.5.0",
     "typescript": "^5.8.0"
@@ -32,6 +33,6 @@
   },
   "packageManager": "npm@10.8.0",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   }
 }

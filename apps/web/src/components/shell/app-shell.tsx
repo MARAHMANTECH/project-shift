@@ -1,9 +1,9 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { UserButton } from "@clerk/nextjs";
 import { BottomNav } from "./bottom-nav";
 import { SidebarNav } from "./sidebar-nav";
+import { UserMenu } from "./user-menu";
 import { Leaf } from "lucide-react";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -25,14 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 Project SHIFT
               </span>
             </div>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "h-9 w-9 rounded-full shadow-sm",
-                  userButtonTrigger: "focus:shadow-none",
-                },
-              }}
-            />
+            <UserMenu />
           </div>
         </header>
 
@@ -47,4 +40,3 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

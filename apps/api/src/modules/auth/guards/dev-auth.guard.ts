@@ -1,6 +1,6 @@
 // Development-only auth guard
 // Auto-injects a test user from seed data in development mode.
-// In production, this guard blocks all requests — use ClerkAuthGuard instead.
+// In production, this guard blocks all requests — use JwtAuthGuard instead.
 // Respects @Public() decorator for webhook endpoints.
 
 import {
@@ -35,7 +35,7 @@ export class DevAuthGuard implements CanActivate {
 
     if (envConfig.NODE_ENV === "production") {
       throw new UnauthorizedException(
-        "DevAuthGuard cannot be used in production. Configure Clerk Auth."
+        "DevAuthGuard cannot be used in production. Configure JwtAuthGuard with Entra ID."
       );
     }
 

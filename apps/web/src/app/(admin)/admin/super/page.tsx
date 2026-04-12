@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import {
   Building2,
   Users,
@@ -39,7 +39,7 @@ interface TenantOverview {
 }
 
 function AdminShell({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
+  const { data: session } = useSession();
 
   const navItems = [
     { href: "/admin/super", label: "Oversigt", icon: BarChart3 },
@@ -65,7 +65,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           <div>
             <p className="text-sm font-bold text-white/90">Super Admin</p>
             <p className="text-xs text-white/50">
-              {user?.emailAddresses?.[0]?.emailAddress ?? "Admin"}
+              {session?.user?.email ?? "Admin"}
             </p>
           </div>
         </div>
@@ -125,7 +125,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function SuperAdminDashboard() {
-  const { getToken } = useAuth();
+  const { data: adminSession } = useSession();
   const [tenants, setTenants] = useState<TenantOverview[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -139,11 +139,11 @@ export default function SuperAdminDashboard() {
   async function fetchTenants() {
     try {
       setIsLoading(true);
-      const token = await getToken();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/tenants`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
         }
       );
 

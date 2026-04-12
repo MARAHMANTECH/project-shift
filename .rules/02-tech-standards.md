@@ -76,17 +76,29 @@
 - **MUST**: Brug environment variables via `.env` med Zod-validering ved opstart.
 - **MUST**: Oprethold en `.env.example` med alle paakraevede variabler (uden vaerdier).
 
-## Authentication (Clerk)
+## Authentication (NextAuth.js + Microsoft Entra ID)
 
-- **MUST**: Brug altid `clerkMiddleware()` fra `@clerk/nextjs/server` i middlewaren.
-- **MUST**: Brug asynkron `auth()` fra `@clerk/nextjs/server` i Server Components.
-- **NEVER**: Brug ALDRIG `_app.tsx` eller Pages routeren. Vi bruger App Router.
-- **NEVER**: Brug ALDRIG `authMiddleware()` (er forældet og erstattet af `clerkMiddleware()`).
-- **NEVER**: Brug ALDRIG gamle/forældede environment variables mønstre.
-- **NEVER**: Importer ALDRIG forældede API'er (som `withAuth` eller gammel `currentUser`).
-- **NEVER**: Brug ALDRIG de forældede komponenter `<SignedIn>` og `<SignedOut>` (brug `<Show>` hvis nødvendigt, eller vores egen `AuthTokenProvider`).
+- **MUST**: Brug NextAuth.js v5 (Auth.js) med Microsoft Entra ID som primær SSO-provider.
+- **MUST**: Multi-tenant: `issuer: "common"` — alle Azure AD tenants kan logge ind.
+- **MUST**: JWT verificeres med `jose` library i backend (`JwtAuthGuard`).
+- **MUST**: JIT Provisioning: Nye brugere oprettes automatisk via email-domain → Organization mapping.
+- **MUST**: `AUTH_SECRET` env-variabel er påkrævet (NextAuth v5 standard).
+- **NEVER**: Brug ALDRIG Clerk-pakker, Clerk-hooks eller Clerk-middleware. Clerk er fuldstændigt fjernet.
+- **NEVER**: Brug ALDRIG `fetch()` til at hente session-token. Brug `useSession().data.accessToken` direkte.
 
 ## Dependencies
 
 - **MUST**: Før brug af en ny pakke, verificer at den er installeret. Installér automatisk, hvis den mangler.
 - **NEVER**: Antag ALDRIG, at target-maskinen allerede har dependencies.
+
+## Stabilitet & Kvalitetssikring
+
+- **NEVER**: Lav ALDRIG "simple fixes" eller "quick patches" der kun adresserer ét symptom. Enhver fejl SKAL analyseres i kontekst af hele systemet.
+- **MUST**: Før ENHVER kodeændring committes, SKAL følgende verifikationskæde gennemføres:
+  1. `npx tsc --noEmit` i ALLE workspaces (web + api) — 0 fejl.
+  2. `npx next build` for web — fuld produktionsbuild.
+  3. `npm run build` for api — fuld NestJS kompilering.
+  4. Grep for uønskede mønstre (f.eks. fjernede dependencies) — 0 matches.
+- **MUST**: Når en fejl rettes, SKAL root cause dokumenteres i commit-beskeden. "Fix type error" er IKKE acceptabelt — beskriv HVORFOR fejlen opstod.
+- **MUST**: Ved refaktorering eller migration SKAL ALLE berørte filer identificeres og opdateres i SAMME commit. Halvfærdige migrationer er forbudt.
+- **NEVER**: Push ALDRIG kode til `main` der ikke har bestået den fulde verifikationskæde.

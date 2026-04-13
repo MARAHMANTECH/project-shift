@@ -72,6 +72,11 @@ COPY prisma/ ./prisma/
 COPY package.json ./
 COPY apps/api/package.json ./apps/api/
 
+# Kopiér kompilerede monorepo pakker fra builder
+COPY --from=builder /app/packages/esg-core/dist ./packages/esg-core/dist
+COPY --from=builder /app/packages/esg-core/package.json ./packages/esg-core/
+COPY --from=builder /app/packages/shared-types/package.json ./packages/shared-types/
+
 # Kopiér entrypoint script
 COPY apps/api/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh

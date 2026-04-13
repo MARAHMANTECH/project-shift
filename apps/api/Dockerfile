@@ -32,8 +32,8 @@ COPY apps/api/ ./apps/api/
 COPY packages/ ./packages/
 COPY prisma/ ./prisma/
 
-# Build NestJS
-RUN npm run build --workspace=@project-shift/api
+# Build NestJS og de pakker den afhænger af (via Turbo)
+RUN npx turbo run build --filter=@project-shift/api
 
 # ── Stage 3: Production Dependencies ──
 FROM node:22-alpine AS prod-deps

@@ -5,6 +5,23 @@ Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
 ---
 
+## [1.1.1] - 2026-04-14
+
+### M5.2: Railway Deployment CI/CD Fixes (Monorepo)
+
+Afsluttende konfiguration af Railway produktionsmiljøet for NextAuth og NestJS monorepo.
+
+#### Backend (API)
+- **`apps/api/Dockerfile`**: Skiftede `npm run build` til `npx turbo run build` i builder-stadiet. Dette sikrer, at interne workspace-afhængigheder (som `@project-shift/esg-core`) kompileres og linkes korrekt ind i dist-mappen, hvilket løser `MODULE_NOT_FOUND` crashet.
+
+#### Frontend (Web)
+- **`apps/web/Dockerfile`**: Skiftede `npm run build` til `npx turbo run build` for at tillade kompilering af `@project-shift/shared-types`.
+- Fjernede `ENV PORT=3000` hardcoding i web-containeren for at sikre kompatibilitet med Railways dynamiske router.
+- Tilføjede miljøvariabel `AUTH_TRUST_HOST=true` til runner-stadiet for at omgå NextAuth's (v5) `UntrustedHost` beskyttelse i reverse-proxy miljøer.
+- Sikrede at `NEXTAUTH_URL` kræver protokolfiksering (`https://`) in Railway Variables for at undgå `ERR_INVALID_URL` crash.
+
+---
+
 ## [1.1.0] - 2026-04-10
 
 ### Auth Migrering — Clerk → NextAuth.js + Microsoft Entra ID

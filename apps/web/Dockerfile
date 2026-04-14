@@ -48,8 +48,8 @@ ENV NEXTAUTH_URL=$NEXTAUTH_URL
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build Next.js i standalone mode
-RUN npm run build --workspace=@project-shift/web
+# Build Next.js i standalone mode via Turbo for at sikre interne packages bygger (shared-types)
+RUN npx turbo run build --filter=@project-shift/web
 
 # ── Stage 3: Runner (minimal) ──
 FROM node:22-alpine AS runner
@@ -73,7 +73,6 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 EXPOSE 3000
-ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Next.js standalone server

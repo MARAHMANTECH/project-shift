@@ -6,7 +6,7 @@
 ---
 
 ## Aktuel Version
-`v1.2.0` - Entra ID Group-Based Access Control
+`v1.3.0` - Super Admin Modul + JIT User Provisioning
 
 ## Aktuel Milestone
 **M6: Auth Migration** ✅ Clerk → NextAuth.js + Microsoft Entra ID
@@ -60,6 +60,18 @@
 | Release Checklist (The Gatekeeper) | ✅ Færdig |
 | verify-release.sh automatisering | ✅ Færdig |
 | Versions-synkronisering (package.json) | ✅ Bugfix |
+| Super Admin modul (Tenants/Integrationer/ESG) | ✅ Færdig |
+| Multi-domæne tenant support (chips UI) | ✅ Færdig |
+| JIT User Provisioning (auto brugeroprettelse) | ✅ Færdig |
+| Edge-kompatibel auth split (auth.config.ts) | ✅ Færdig |
+| AdminShell delt layout komponent | ✅ Færdig |
+| requireSuperAdmin guard (DB-baseret) | ✅ Færdig |
+| /api/auth/me rollecheck endpoint | ✅ Færdig |
+| Synlig Log ud-knap i sidebar | ✅ Færdig |
+| PostGIS deaktiveret for Railway dev | ✅ Bugfix |
+| Middleware TypeScript inferens-fix | ✅ Bugfix |
+| Railway dev DATABASE_URL konfiguration | ✅ Bugfix |
+| promote-admin.mjs værktøj | ✅ Færdig |
 
 ## Færdiggjorte Filer
 
@@ -114,6 +126,23 @@
 - `.rules/06-deployment.md` - Zero-Bug Policy + Release Checklist
 - `PROJECT_GOVERNANCE.md` - §7: Deployment Governance
 
+### M7: Super Admin Modul (2026-04-15)
+- `apps/web/src/app/(admin)/admin/super/page.tsx` - Super Admin dashboard
+- `apps/web/src/app/(admin)/admin/super/tenants/page.tsx` - Tenant oversigt
+- `apps/web/src/app/(admin)/admin/super/tenants/new/page.tsx` - Opret tenant (multi-domæne)
+- `apps/web/src/app/(admin)/admin/super/integrations/page.tsx` - Integrationer
+- `apps/web/src/app/(admin)/admin/super/esg/page.tsx` - ESG overblik
+- `apps/web/src/app/(admin)/admin/super/components/admin-shell.tsx` - Delt layout
+- `apps/web/src/app/api/admin/tenants/route.ts` - Tenant CRUD API
+- `apps/web/src/app/api/admin/integrations/route.ts` - Integrationer API
+- `apps/web/src/app/api/admin/esg/route.ts` - ESG aggregering API
+- `apps/web/src/app/api/auth/me/route.ts` - Rollecheck endpoint
+- `apps/web/src/lib/admin-guard.ts` - requireSuperAdmin guard
+- `apps/web/src/lib/auth.config.ts` - Edge-kompatibel auth config
+- `apps/web/src/lib/auth.ts` - JIT User Provisioning + DB rolle-sync
+- `apps/web/src/lib/db.ts` - Prisma singleton
+- `scripts/promote-admin.mjs` - SUPER_ADMIN promovering
+
 ## Tech Stack (Bekræftet)
 
 | Lag | Teknologi |
@@ -143,5 +172,5 @@
 
 ---
 
-> **Sidst opdateret**: 2026-04-15T12:34:00+02:00
-> **Opdateret af**: AI Agent (v1.2.0 Entra ID Group-Based Access Control + Zero-Bug Policy)
+> **Sidst opdateret**: 2026-04-15T17:12:00+02:00
+> **Opdateret af**: AI Agent (v1.3.0 Super Admin Modul + JIT User Provisioning)

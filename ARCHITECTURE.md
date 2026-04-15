@@ -145,9 +145,24 @@ CO2_sparet (kg) = distance_km * emission_factor * (1 - 1 / total_occupants)
 - **Fejl:** RFC 7807 Problem Details
 - **Auth:** NextAuth.js JWT i `Authorization: Bearer <token>` eller session cookie (maxAge: 2 timer)
 - **Auth Provider:** Microsoft Entra ID (multi-tenant) via NextAuth.js — JWT verificeres med `jose` library
+- **Auth Arkitektur (Edge Split):**
+  - `auth.config.ts` — Edge-kompatibel config (bruges af `middleware.ts`, ingen Prisma)
+  - `auth.ts` — Server-only config (udvider base med Prisma, JIT provisioning, DB rolle-sync)
+  - `middleware.ts` — Wrapper-funktion med explicit type for monorepo TypeScript-kompatibilitet
+- **JIT User Provisioning:** Brugere oprettes automatisk i DB ved første login via `events.signIn`
+  - Email-domæne matches mod `EmailDomain`-tabel → bruger tilknyttes korrekt organisation
+  - Rolle hentes fra DB og injiceres i JWT via `callbacks.jwt`
 - **Credentials Fallback:** Skjult email/password provider (aktiveres via `ENABLE_CREDENTIALS_LOGIN=true`)
 - **Tenant:** Udtrukket fra JWT `organizationId` claim
 - **Response budget:** < 300ms
+
+### Super Admin Modul
+
+- **Guard:** `requireSuperAdmin()` i `lib/admin-guard.ts` — slår rolle op direkte i DB (ikke session)
+- **Sider:** `/admin/super` (dashboard), `/admin/super/tenants` (CRUD), `/admin/super/integrations`, `/admin/super/esg`
+- **Layout:** `AdminShell` — delt komponent med Forest Green tema og intern navigation
+- **Multi-domæne:** Organisationer understøtter flere email-domæner via `EmailDomain`-relation
+- **Sidebar:** Super Admin-link vises kun for brugere med `SUPER_ADMIN` rolle (klient-side check via `/api/auth/me`)
 
 ---
 

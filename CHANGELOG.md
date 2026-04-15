@@ -4,6 +4,47 @@ Alle vigtige ændringer i Project SHIFT dokumenteres her.
 Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
 ---
+## [1.3.0] - 2026-04-15
+
+### Super Admin Modul + JIT User Provisioning
+
+Komplet Super Admin administrationsmodul med multi-domæne tenant management og automatisk brugeroprettelse.
+
+#### Super Admin Sider
+- **`/admin/super`**: Dashboard med tenant-statistik, integrationer og ESG-overblik
+- **`/admin/super/tenants`**: Oversigt over alle organisationer med bruger/ride-tal
+- **`/admin/super/tenants/new`**: Opret organisation med multi-domæne support (chips UI)
+- **`/admin/super/integrations`**: Oversigt over alle integrationer på tværs af tenants
+- **`/admin/super/esg`**: Aggregeret ESG-data med top-organisationer
+
+#### Auth & Provisioning
+- **JIT User Provisioning**: Brugere oprettes automatisk i databasen ved første login via Entra ID
+- **Email-domæne matching**: Nye brugere tilknyttes automatisk den korrekte organisation
+- **DB rolle-sync**: Brugerens rolle hentes fra databasen og injiceres i JWT token
+- **Edge-kompatibel auth split**: `auth.config.ts` (Edge/middleware) + `auth.ts` (Server/Prisma)
+
+#### API Routes
+- **`/api/admin/tenants`** (GET/POST): CRUD med `requireSuperAdmin` guard
+- **`/api/admin/integrations`** (GET): Integrationer med organisation-join
+- **`/api/admin/esg`** (GET): Aggregeret ESG-data med top-10 organisationer
+- **`/api/auth/me`** (GET): Rollecheck endpoint til frontend-navigation
+
+#### UI/UX
+- **AdminShell**: Delt layout med Forest Green tema og sidebar-navigation
+- **Multi-domæne tenant**: Chips UI med Enter/komma-input for flere email-domæner
+- **Synlig Log ud-knap**: Direkte i sidebaren (ikke skjult i dropdown)
+
+#### Railway Development Fixes
+- **PostGIS deaktiveret**: Railway standard PostgreSQL har ikke PostGIS extension
+- **Middleware TypeScript fix**: Explicit wrapper-funktion løser type-inferens i monorepo
+- **DATABASE_URL**: Web-servicen kræver database-forbindelse til Prisma API routes
+- **Database migration**: `prisma db push` til Railway dev database
+
+#### Værktøjer
+- **`scripts/promote-admin.mjs`**: CLI-værktøj til at promovere brugere til SUPER_ADMIN
+- **`/api/admin/setup`**: Midlertidig engangs-route til initial admin-setup (skal slettes)
+
+---
 
 ## [1.2.0] - 2026-04-15
 

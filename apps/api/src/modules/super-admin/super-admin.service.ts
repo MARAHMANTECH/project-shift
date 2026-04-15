@@ -7,9 +7,26 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "../../common/prisma/prisma.service";
-import type { CreateTenantDto, UpdateTenantDto } from "./dto/super-admin.dto";
+import type {
+  CreateTenantDto,
+  UpdateTenantDto,
+  UserFilterDto,
+  UpdateUserRoleDto,
+  UpdateUserStatusDto,
+  MoveUserDto,
+  AuditLogFilterDto,
+  UpdateLicenseDto,
+  AdminFeedbackFilterDto,
+  AdminUpdateFeedbackDto,
+  AdminResolveFeedbackDto,
+  AdminChangelogFilterDto,
+  AdminCreateChangelogDto,
+  AdminUpdateChangelogDto,
+  UpdateSsoStatusDto,
+} from "./dto/super-admin.dto";
 
 @Injectable()
 export class SuperAdminService {
@@ -17,7 +34,9 @@ export class SuperAdminService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  // ── Tenant Management ──
+  // ══════════════════════════════════════════════════════════════════
+  // TENANT MANAGEMENT
+  // ══════════════════════════════════════════════════════════════════
 
   async listTenants(search?: string, status?: string) {
     const where: Record<string, unknown> = {};
@@ -70,7 +89,6 @@ export class SuperAdminService {
   }
 
   async createTenant(dto: CreateTenantDto, adminUserId: string) {
-    // Check slug uniqueness
     const existing = await this.prisma.organization.findFirst({
       where: { slug: dto.slug },
     });
@@ -80,7 +98,6 @@ export class SuperAdminService {
       );
     }
 
-    // Create organization + license + modules + email domains in transaction
     const result = await this.prisma.$transaction(async (tx) => {
       const org = await tx.organization.create({
         data: {
@@ -119,7 +136,6 @@ export class SuperAdminService {
         });
       }
 
-      // Audit log
       await tx.auditLog.create({
         data: {
           organizationId: org.id,
@@ -220,7 +236,6 @@ export class SuperAdminService {
       }
 
       if (dto.enabledModules) {
-        // Disable all, then enable selected
         await tx.orgModule.updateMany({
           where: { organizationId: orgId },
           data: { isEnabled: false },
@@ -287,7 +302,6 @@ export class SuperAdminService {
       return { message: "Dry-run: Ingen ændringer foretaget.", ...impact };
     }
 
-    // Soft-delete per governance rules
     await this.prisma.organization.update({
       where: { id: orgId },
       data: { deletedAt: new Date() },
@@ -308,7 +322,746 @@ export class SuperAdminService {
     return { message: "Organisation soft-deleted.", ...impact };
   }
 
-  // ── Integration Overview ──
+  // ══════════════════════════════════════════════════════════════════
+  // USER MANAGEMENT (cross-tenant)
+  // ══════════════════════════════════════════════════════════════════
+
+  async listUsers(filter: UserFilterDto) {
+    const where: Record<string, unknown> = { deletedAt: null };
+
+    if (filter.role) {
+      where.role = filter.role;
+    }
+
+    if (filter.organizationId) {
+      where.organizationId = filter.organizationId;
+    }
+
+    if (filter.isActive !== undefined) {
+      where.isActive = filter.isActive;
+    }
+
+    if (filter.search) {
+      where.OR = [
+        { email: { contains: filter.search, mode: "insensitive" } },
+        { firstName: { contains: filter.search, mode: "insensitive" } },
+        { lastName: { contains: filter.search, mode: "insensitive" } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          organization: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data, total, page: filter.page, limit: filter.limit };
+  }
+
+  async getUserDetails(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        organization: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Bruger ${userId} ikke fundet.`);
+    }
+
+    // Hent seneste audit-log entries for brugeren
+    const recentActivity = await this.prisma.auditLog.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        action: true,
+        entity: true,
+        entityId: true,
+        createdAt: true,
+        metadata: true,
+      },
+    });
+
+    return { ...user, recentActivity };
+  }
+
+  async updateUserRole(
+    userId: string,
+    dto: UpdateUserRoleDto,
+    adminUserId: string
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true, organizationId: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Bruger ${userId} ikke fundet.`);
+    }
+
+    // Forhindre nedgradering af sidste SUPER_ADMIN
+    if (user.role === "SUPER_ADMIN" && dto.role !== "SUPER_ADMIN") {
+      const superAdminCount = await this.prisma.user.count({
+        where: { role: "SUPER_ADMIN", isActive: true, deletedAt: null },
+      });
+
+      if (superAdminCount <= 1) {
+        throw new ForbiddenException(
+          "Kan ikke nedgradere den eneste aktive Super Admin. Opret en anden SUPER_ADMIN først."
+        );
+      }
+    }
+
+    const previousRole = user.role;
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { role: dto.role },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        organization: { select: { id: true, name: true } },
+      },
+    });
+
+    // Audit log
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: user.organizationId,
+        userId: adminUserId,
+        action: "USER_ROLE_CHANGED",
+        entity: "User",
+        entityId: userId,
+        metadata: {
+          targetEmail: user.email,
+          previousRole,
+          newRole: dto.role,
+        },
+      },
+    });
+
+    this.logger.log(
+      `Role changed: ${user.email} ${previousRole} → ${dto.role} (by ${adminUserId})`
+    );
+
+    return updatedUser;
+  }
+
+  async updateUserStatus(
+    userId: string,
+    dto: UpdateUserStatusDto,
+    adminUserId: string
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, isActive: true, organizationId: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Bruger ${userId} ikke fundet.`);
+    }
+
+    // Forhindre deaktivering af eneste SUPER_ADMIN
+    if (
+      user.role === "SUPER_ADMIN" &&
+      !dto.isActive
+    ) {
+      const activeSupers = await this.prisma.user.count({
+        where: { role: "SUPER_ADMIN", isActive: true, deletedAt: null },
+      });
+      if (activeSupers <= 1) {
+        throw new ForbiddenException(
+          "Kan ikke deaktivere den eneste aktive Super Admin."
+        );
+      }
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isActive: dto.isActive },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: user.organizationId,
+        userId: adminUserId,
+        action: dto.isActive ? "USER_ACTIVATED" : "USER_DEACTIVATED",
+        entity: "User",
+        entityId: userId,
+        metadata: { targetEmail: user.email },
+      },
+    });
+
+    this.logger.log(
+      `User ${dto.isActive ? "activated" : "deactivated"}: ${user.email}`
+    );
+
+    return updatedUser;
+  }
+
+  async moveUser(
+    userId: string,
+    dto: MoveUserDto,
+    adminUserId: string
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, organizationId: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Bruger ${userId} ikke fundet.`);
+    }
+
+    const targetOrg = await this.prisma.organization.findUnique({
+      where: { id: dto.organizationId },
+      select: { id: true, name: true },
+    });
+
+    if (!targetOrg) {
+      throw new NotFoundException(`Målorganisation ${dto.organizationId} ikke fundet.`);
+    }
+
+    if (user.organizationId === dto.organizationId) {
+      throw new ConflictException("Brugeren tilhører allerede denne organisation.");
+    }
+
+    const previousOrgId = user.organizationId;
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { organizationId: dto.organizationId },
+      include: {
+        organization: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: dto.organizationId,
+        userId: adminUserId,
+        action: "USER_MOVED",
+        entity: "User",
+        entityId: userId,
+        metadata: {
+          targetEmail: user.email,
+          fromOrganizationId: previousOrgId,
+          toOrganizationId: dto.organizationId,
+          toOrganizationName: targetOrg.name,
+        },
+      },
+    });
+
+    this.logger.log(
+      `User moved: ${user.email} → org ${targetOrg.name}`
+    );
+
+    return updatedUser;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // AUDIT LOG
+  // ══════════════════════════════════════════════════════════════════
+
+  async listAuditLogs(filter: AuditLogFilterDto) {
+    const where: Record<string, unknown> = {};
+
+    if (filter.organizationId) {
+      where.organizationId = filter.organizationId;
+    }
+    if (filter.userId) {
+      where.userId = filter.userId;
+    }
+    if (filter.action) {
+      where.action = { contains: filter.action, mode: "insensitive" };
+    }
+    if (filter.entity) {
+      where.entity = { contains: filter.entity, mode: "insensitive" };
+    }
+    if (filter.fromDate || filter.toDate) {
+      where.createdAt = {
+        ...(filter.fromDate && { gte: new Date(filter.fromDate) }),
+        ...(filter.toDate && { lte: new Date(filter.toDate) }),
+      };
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        include: {
+          user: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+          organization: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return { data, total, page: filter.page, limit: filter.limit };
+  }
+
+  async listImpersonationLogs() {
+    return this.prisma.impersonationLog.findMany({
+      orderBy: { startedAt: "desc" },
+      take: 100,
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // DASHBOARD & STATS
+  // ══════════════════════════════════════════════════════════════════
+
+  async getDashboardStats() {
+    const [
+      totalOrgs,
+      activeOrgs,
+      totalUsers,
+      activeUsers,
+      totalRides,
+      completedRides,
+      totalEvents,
+      totalCo2,
+    ] = await Promise.all([
+      this.prisma.organization.count(),
+      this.prisma.organization.count({ where: { deletedAt: null } }),
+      this.prisma.user.count({ where: { deletedAt: null } }),
+      this.prisma.user.count({ where: { isActive: true, deletedAt: null } }),
+      this.prisma.ride.count(),
+      this.prisma.ride.count({ where: { status: "COMPLETED" } }),
+      this.prisma.event.count(),
+      this.prisma.esgTripLog.aggregate({ _sum: { co2SavedKg: true } }),
+    ]);
+
+    // Licensfordeling
+    const licenseTiers = await this.prisma.organizationLicense.groupBy({
+      by: ["tier"],
+      _count: true,
+    });
+
+    // Rollefordeling
+    const roleDistribution = await this.prisma.user.groupBy({
+      by: ["role"],
+      where: { deletedAt: null },
+      _count: true,
+    });
+
+    // Seneste audit
+    const recentAudit = await this.prisma.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        user: { select: { email: true, firstName: true, lastName: true } },
+        organization: { select: { name: true } },
+      },
+    });
+
+    return {
+      organizations: { total: totalOrgs, active: activeOrgs },
+      users: { total: totalUsers, active: activeUsers },
+      rides: { total: totalRides, completed: completedRides },
+      events: { total: totalEvents },
+      esg: { totalCo2SavedKg: totalCo2._sum.co2SavedKg ?? 0 },
+      licenseTiers: licenseTiers.map((lt) => ({
+        tier: lt.tier,
+        count: lt._count,
+      })),
+      roleDistribution: roleDistribution.map((rd) => ({
+        role: rd.role,
+        count: rd._count,
+      })),
+      recentAudit,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // LICENSE MANAGEMENT
+  // ══════════════════════════════════════════════════════════════════
+
+  async listLicenses() {
+    const orgs = await this.prisma.organization.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        license: true,
+        _count: { select: { users: true } },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return orgs.map((org) => ({
+      organizationId: org.id,
+      organizationName: org.name,
+      organizationSlug: org.slug,
+      license: org.license,
+      currentUsers: org._count.users,
+      usagePercent: org.license
+        ? Math.round((org._count.users / org.license.maxUsers) * 100)
+        : 0,
+    }));
+  }
+
+  async updateLicense(
+    orgId: string,
+    dto: UpdateLicenseDto,
+    adminUserId: string
+  ) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: orgId },
+    });
+
+    if (!org) {
+      throw new NotFoundException(`Organisation ${orgId} ikke fundet.`);
+    }
+
+    const license = await this.prisma.organizationLicense.upsert({
+      where: { organizationId: orgId },
+      create: {
+        organizationId: orgId,
+        tier: dto.tier ?? "TRIAL",
+        maxUsers: dto.maxUsers ?? 50,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        notes: dto.notes ?? null,
+      },
+      update: {
+        ...(dto.tier && { tier: dto.tier }),
+        ...(dto.maxUsers && { maxUsers: dto.maxUsers }),
+        ...(dto.expiresAt !== undefined && {
+          expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        }),
+        ...(dto.notes !== undefined && { notes: dto.notes }),
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: orgId,
+        userId: adminUserId,
+        action: "LICENSE_UPDATED",
+        entity: "OrganizationLicense",
+        entityId: license.id,
+        metadata: JSON.parse(JSON.stringify(dto)),
+      },
+    });
+
+    return license;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // FEEDBACK TRIAGE (global/unscoped)
+  // ══════════════════════════════════════════════════════════════════
+
+  async listAllFeedback(filter: AdminFeedbackFilterDto) {
+    const where: Record<string, unknown> = {};
+
+    if (filter.status) where.status = filter.status;
+    if (filter.type) where.type = filter.type;
+    if (filter.priority) where.priority = filter.priority;
+    if (filter.organizationId) where.organizationId = filter.organizationId;
+
+    if (filter.search) {
+      where.OR = [
+        { title: { contains: filter.search, mode: "insensitive" } },
+        { content: { contains: filter.search, mode: "insensitive" } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.feedback.findMany({
+        where,
+        include: {
+          user: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+          organization: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+      }),
+      this.prisma.feedback.count({ where }),
+    ]);
+
+    return { data, total, page: filter.page, limit: filter.limit };
+  }
+
+  async adminUpdateFeedback(
+    id: string,
+    dto: AdminUpdateFeedbackDto,
+    adminUserId: string
+  ) {
+    const feedback = await this.prisma.feedback.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, title: true },
+    });
+
+    if (!feedback) {
+      throw new NotFoundException(`Feedback ${id} ikke fundet.`);
+    }
+
+    const updated = await this.prisma.feedback.update({
+      where: { id },
+      data: dto,
+      include: {
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
+        organization: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: feedback.organizationId,
+        userId: adminUserId,
+        action: "FEEDBACK_UPDATED",
+        entity: "Feedback",
+        entityId: id,
+        metadata: { title: feedback.title, changes: dto },
+      },
+    });
+
+    return updated;
+  }
+
+  async adminResolveFeedback(
+    id: string,
+    dto: AdminResolveFeedbackDto,
+    adminUserId: string
+  ) {
+    const feedback = await this.prisma.feedback.findUnique({
+      where: { id },
+      select: { id: true, title: true, type: true, organizationId: true },
+    });
+
+    if (!feedback) {
+      throw new NotFoundException(`Feedback ${id} ikke fundet.`);
+    }
+
+    const updatedFeedback = await this.prisma.feedback.update({
+      where: { id },
+      data: { status: "DONE", resolvedAt: new Date() },
+    });
+
+    let changelog = null;
+    if (dto.createChangelog && dto.changelogBuild) {
+      changelog = await this.prisma.changelog.create({
+        data: {
+          versionBuild: dto.changelogBuild,
+          type: dto.changelogType ?? (feedback.type as "FEATURE" | "FIX" | "IMPROVEMENT"),
+          title: dto.changelogTitle ?? feedback.title,
+          description:
+            dto.changelogDescription ??
+            `Indmelding løst: ${feedback.title}`,
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+      });
+
+      await this.prisma.feedback.update({
+        where: { id },
+        data: { changelogId: changelog.id },
+      });
+    }
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: feedback.organizationId,
+        userId: adminUserId,
+        action: "FEEDBACK_RESOLVED",
+        entity: "Feedback",
+        entityId: id,
+        metadata: { title: feedback.title, createdChangelog: !!changelog },
+      },
+    });
+
+    return { feedback: updatedFeedback, changelog };
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // CHANGELOG ADMIN
+  // ══════════════════════════════════════════════════════════════════
+
+  async listAllChangelogs(filter: AdminChangelogFilterDto) {
+    const where: Record<string, unknown> = {};
+
+    if (filter.type) where.type = filter.type;
+    if (filter.isPublished !== undefined) where.isPublished = filter.isPublished;
+
+    if (filter.search) {
+      where.OR = [
+        { title: { contains: filter.search, mode: "insensitive" } },
+        { description: { contains: filter.search, mode: "insensitive" } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.changelog.findMany({
+        where,
+        orderBy: [{ versionBuild: "desc" }, { createdAt: "desc" }],
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+      }),
+      this.prisma.changelog.count({ where }),
+    ]);
+
+    return { data, total, page: filter.page, limit: filter.limit };
+  }
+
+  async adminCreateChangelog(dto: AdminCreateChangelogDto) {
+    return this.prisma.changelog.create({
+      data: {
+        versionBuild: dto.versionBuild,
+        type: dto.type,
+        title: dto.title,
+        description: dto.description,
+        isPublished: dto.isPublished,
+        publishedAt: dto.isPublished ? new Date() : null,
+      },
+    });
+  }
+
+  async adminUpdateChangelog(id: string, dto: AdminUpdateChangelogDto) {
+    const entry = await this.prisma.changelog.findUnique({ where: { id } });
+    if (!entry) {
+      throw new NotFoundException("Changelog-entry blev ikke fundet.");
+    }
+
+    const data: Record<string, unknown> = { ...dto };
+    if (dto.isPublished === true && !entry.publishedAt) {
+      data.publishedAt = new Date();
+    }
+
+    return this.prisma.changelog.update({ where: { id }, data });
+  }
+
+  async adminDeleteChangelog(id: string) {
+    const entry = await this.prisma.changelog.findUnique({ where: { id } });
+    if (!entry) {
+      throw new NotFoundException("Changelog-entry blev ikke fundet.");
+    }
+    await this.prisma.changelog.delete({ where: { id } });
+    return { message: "Changelog-entry er slettet." };
+  }
+
+  async toggleChangelogPublish(id: string) {
+    const entry = await this.prisma.changelog.findUnique({ where: { id } });
+    if (!entry) {
+      throw new NotFoundException("Changelog-entry blev ikke fundet.");
+    }
+
+    const newPublished = !entry.isPublished;
+    return this.prisma.changelog.update({
+      where: { id },
+      data: {
+        isPublished: newPublished,
+        publishedAt: newPublished ? new Date() : null,
+      },
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // SSO MANAGEMENT
+  // ══════════════════════════════════════════════════════════════════
+
+  async listAllSsoConnections() {
+    return this.prisma.ssoConnection.findMany({
+      include: {
+        organization: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+  }
+
+  async updateSsoStatus(
+    id: string,
+    dto: UpdateSsoStatusDto,
+    adminUserId: string
+  ) {
+    const sso = await this.prisma.ssoConnection.findUnique({
+      where: { id },
+      select: { id: true, organizationId: true, provider: true, status: true },
+    });
+
+    if (!sso) {
+      throw new NotFoundException(`SSO-forbindelse ${id} ikke fundet.`);
+    }
+
+    const updated = await this.prisma.ssoConnection.update({
+      where: { id },
+      data: { status: dto.status },
+      include: {
+        organization: { select: { id: true, name: true } },
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        organizationId: sso.organizationId,
+        userId: adminUserId,
+        action: "SSO_STATUS_CHANGED",
+        entity: "SsoConnection",
+        entityId: id,
+        metadata: {
+          provider: sso.provider,
+          previousStatus: sso.status,
+          newStatus: dto.status,
+        },
+      },
+    });
+
+    return updated;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // INTEGRATION OVERVIEW (existing)
+  // ══════════════════════════════════════════════════════════════════
 
   async listAllIntegrations() {
     return this.prisma.integrationConfiguration.findMany({
@@ -321,16 +1074,14 @@ export class SuperAdminService {
     });
   }
 
-  // ── ESG Cross-Tenant ──
+  // ══════════════════════════════════════════════════════════════════
+  // ESG CROSS-TENANT (existing)
+  // ══════════════════════════════════════════════════════════════════
 
   async getEsgCrossTenantOverview() {
     const orgs = await this.prisma.organization.findMany({
       where: { deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-      },
+      select: { id: true, name: true, slug: true },
     });
 
     const results = await Promise.all(
@@ -362,7 +1113,9 @@ export class SuperAdminService {
     return { organizations: results, totals };
   }
 
-  // ── Impersonation ──
+  // ══════════════════════════════════════════════════════════════════
+  // IMPERSONATION (existing)
+  // ══════════════════════════════════════════════════════════════════
 
   async startImpersonation(
     adminUserId: string,

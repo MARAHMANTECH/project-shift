@@ -3,6 +3,59 @@
 Alle vigtige ændringer i Project SHIFT dokumenteres her.
 Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
+
+---
+## [1.4.0] - 2026-04-15
+
+### Super Admin Modul — Fase 1 & 2: Komplet administrationsportal
+
+Udvidelse af Super Admin modulet fra 4 til 10 administrationssider med global brugerstyring, rolleændringer, audit log, licensstyring, feedback triage, changelog admin og SSO management.
+
+#### Nye API Routes (Next.js)
+- **`/api/admin/users`** (GET): Global brugerliste med cross-tenant søgning, filtrering (rolle/org/status), pagination
+- **`/api/admin/users/[id]`** (GET/PATCH): Brugerdetaljer, rolleændring, statustoggle, organisationsflytning
+- **`/api/admin/audit-logs`** (GET): Global audit log med filtrering (org/bruger/action/entity/tidsperiode)
+- **`/api/admin/dashboard`** (GET): Platform KPI'er (orgs, brugere, ture, CO₂, licensfordeling, rollefordeling)
+- **`/api/admin/licenses`** (GET): Licensoversigt med brugerforbrug
+- **`/api/admin/licenses/[orgId]`** (PATCH): Licensopdatering med audit-log
+- **`/api/admin/feedback`** (GET): Global feedback triage (cross-tenant, unscoped)
+- **`/api/admin/feedback/[id]`** (PATCH): Statusændring, prioritering, resolve med optional changelog
+- **`/api/admin/changelog`** (GET/POST): Changelog admin (alle inkl. drafts, oprettelse)
+- **`/api/admin/changelog/[id]`** (PATCH/DELETE): Redigering, publicér/afpublicér toggle, sletning
+- **`/api/admin/sso`** (GET): SSO-forbindelser cross-tenant
+- **`/api/admin/tenants/[id]`** (GET/PATCH/DELETE): Organisationsdetaljer, redigering, soft-delete med dry-run
+
+#### Nye Frontend-sider
+- **Platform Dashboard** (`/admin/super`): KPI-kort, licensfordeling, rollefordeling, feedback pipeline, hurtig-adgang, aktivitetsfeed
+- **Brugerstyring** (`/admin/super/users`): Cross-tenant brugerliste med inline rolleændring dropdown, aktiv/inaktiv toggle
+- **Audit Log** (`/admin/super/audit`): Filtrerbar log med metadata-expand, CSV-eksport
+- **Licensoversigt** (`/admin/super/licenses`): Brugerforbrug progress bars, inline tier-redigering, udløbsadvarsler
+- **Feedback Triage** (`/admin/super/feedback`): Global status-pipeline, prioritering, resolve med optional changelog
+- **Changelog Admin** (`/admin/super/changelog`): CRUD med publicér/afpublicér, draft-visning (dashed border)
+- **SSO Management** (`/admin/super/sso`): Status-badges, forbindelsesliste
+- **Tenant Detaljer** (API-ready til frontend `/admin/super/tenants/[id]`)
+
+#### AdminShell Udvidelse
+- Sidebar udvidet fra 4 → 10 menupunkter
+- Organiseret i 3 sektioner: PLATFORM / DATA / INDHOLD
+- Log ud-knap i sidebar footer
+
+#### Backend (NestJS)
+- **`super-admin.dto.ts`**: 13 nye Zod-validerede schemas (brugerstyring, audit, licenser, feedback, changelog, SSO)
+- **`super-admin.service.ts`**: 25+ nye metoder med cross-tenant queries, audit logging, rollebeskyttelse
+- **`super-admin.controller.ts`**: 22 nye REST endpoints under `/admin/*` med `@Roles('SUPER_ADMIN')`
+
+#### Sikkerhedsmekanismer
+- Rollebeskyttelse: Kan ikke nedgradere eneste aktive SUPER_ADMIN
+- Kan ikke deaktivere eneste aktive SUPER_ADMIN
+- Dry-run: Soft-delete kræver eksplicit `dryRun=false`
+- Audit trail: Alle destruktive handlinger logges med metadata
+
+#### Governance
+- `ARCHITECTURE.md` opdateret med komplet Fase 1 & 2 dokumentation
+- TypeScript strict: ✅ 0 fejl
+- Alle endpoints beskyttet med `requireSuperAdmin()` guard
+
 ---
 ## [1.3.0] - 2026-04-15
 

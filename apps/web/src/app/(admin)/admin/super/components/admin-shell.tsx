@@ -2,22 +2,49 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   Building2,
   Plug,
   Leaf,
   Shield,
   BarChart3,
-  Settings,
+  Users,
+  ScrollText,
+  KeyRound,
+  CreditCard,
+  FileText,
+  MessageSquare,
   ArrowLeft,
+  LogOut,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/admin/super", label: "Oversigt", icon: BarChart3 },
-  { href: "/admin/super/tenants", label: "Organisationer", icon: Building2 },
-  { href: "/admin/super/integrations", label: "Integrationer", icon: Plug },
-  { href: "/admin/super/esg", label: "ESG-overblik", icon: Leaf },
+const navSections = [
+  {
+    label: "PLATFORM",
+    items: [
+      { href: "/admin/super", label: "Dashboard", icon: BarChart3, exact: true },
+      { href: "/admin/super/tenants", label: "Organisationer", icon: Building2 },
+      { href: "/admin/super/users", label: "Brugere", icon: Users },
+      { href: "/admin/super/audit", label: "Audit Log", icon: ScrollText },
+    ],
+  },
+  {
+    label: "DATA",
+    items: [
+      { href: "/admin/super/integrations", label: "Integrationer", icon: Plug },
+      { href: "/admin/super/sso", label: "SSO & Identity", icon: KeyRound },
+      { href: "/admin/super/esg", label: "ESG-overblik", icon: Leaf },
+      { href: "/admin/super/licenses", label: "Licenser", icon: CreditCard },
+    ],
+  },
+  {
+    label: "INDHOLD",
+    items: [
+      { href: "/admin/super/changelog", label: "Changelog", icon: FileText },
+      { href: "/admin/super/feedback", label: "Feedback", icon: MessageSquare },
+    ],
+  },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -47,39 +74,55 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/admin/super"
-                ? pathname === "/admin/super"
-                : pathname.startsWith(item.href);
+        <nav className="flex-1 px-4 py-4 space-y-5 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.label}>
+              <p className="px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">
+                {section.label}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const isExact = "exact" in item && item.exact;
+                  const isActive = isExact
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? "text-white bg-white/15"
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </Link>
-            );
-          })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
+                        isActive
+                          ? "text-white bg-white/15"
+                          : "text-white/60 hover:text-white hover:bg-white/8"
+                      }`}
+                    >
+                      <item.icon size={16} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        {/* Back to Dashboard */}
-        <div className="p-4 border-t border-white/10">
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10 space-y-1">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all text-sm"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all text-[13px]"
           >
             <ArrowLeft size={16} />
             Tilbage til Dashboard
           </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/40 hover:text-red-300 hover:bg-white/5 transition-all text-[13px]"
+          >
+            <LogOut size={16} />
+            Log ud
+          </button>
         </div>
       </aside>
 

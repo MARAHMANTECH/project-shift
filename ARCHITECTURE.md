@@ -156,13 +156,32 @@ CO2_sparet (kg) = distance_km * emission_factor * (1 - 1 / total_occupants)
 - **Tenant:** Udtrukket fra JWT `organizationId` claim
 - **Response budget:** < 300ms
 
-### Super Admin Modul
+### Super Admin Modul (Fase 1 & 2)
 
 - **Guard:** `requireSuperAdmin()` i `lib/admin-guard.ts` — slår rolle op direkte i DB (ikke session)
-- **Sider:** `/admin/super` (dashboard), `/admin/super/tenants` (CRUD), `/admin/super/integrations`, `/admin/super/esg`
-- **Layout:** `AdminShell` — delt komponent med Forest Green tema og intern navigation
+- **Layout:** `AdminShell` — delt komponent med Forest Green tema, 3 sektioner (Platform/Data/Indhold), logout
 - **Multi-domæne:** Organisationer understøtter flere email-domæner via `EmailDomain`-relation
 - **Sidebar:** Super Admin-link vises kun for brugere med `SUPER_ADMIN` rolle (klient-side check via `/api/auth/me`)
+
+#### Sider (10 stk)
+| Sti | Funktion |
+|-----|----------|
+| `/admin/super` | Platform Dashboard (KPI'er, licensfordeling, rollefordeling, aktivitetsfeed) |
+| `/admin/super/tenants` | Organisationsliste med oprettelse |
+| `/admin/super/tenants/[id]` | Organisationsdetaljer med redigering og soft-delete (dry-run) |
+| `/admin/super/users` | Global brugerstyring (cross-tenant, rolleændring, status-toggle) |
+| `/admin/super/audit` | Audit Log viewer (filtrering, metadata-expand, CSV-eksport) |
+| `/admin/super/integrations` | Integrationsoversigt |
+| `/admin/super/sso` | SSO & Identity management |
+| `/admin/super/esg` | ESG-overblik (CO₂, ture, distance) |
+| `/admin/super/licenses` | Licensoversigt (forbrug, inline-redigering, udløbsadvarsler) |
+| `/admin/super/changelog` | Changelog admin (CRUD, publicér/afpublicér, draft-visning) |
+| `/admin/super/feedback` | Feedback triage (global, status-pipeline, prioritering, resolve) |
+
+#### Sikkerhedsmekanismer
+- **Rollebeskyttelse:** Kan ikke nedgradere eneste aktive SUPER_ADMIN
+- **Dry-run:** Soft-delete af organisationer kræver eksplicit `dryRun=false`
+- **Audit Trail:** Alle destruktive handlinger logges med metadata i `AuditLog`
 
 ---
 

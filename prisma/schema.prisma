@@ -10,7 +10,8 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [postgis]
+  // PostGIS deaktiveret for Railway dev (ikke tilgængelig) — aktiver i produktion med PostGIS-support
+  // extensions = [postgis]
 }
 
 // ============================================================

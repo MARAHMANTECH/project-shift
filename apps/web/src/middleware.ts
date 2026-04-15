@@ -3,11 +3,15 @@
 // Per ARCHITECTURE.md: Uautoriserede brugere redirectes til /login
 
 import NextAuth from "next-auth";
+import type { NextAuthResult } from "next-auth";
 import { authConfig } from "@/lib/auth.config";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+// Explicit type annotation kræves for at undgå TypeScript portable-type fejl i monorepo builds
+const middleware: NextAuthResult["auth"] = auth;
+
+export default middleware((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth?.user;
   

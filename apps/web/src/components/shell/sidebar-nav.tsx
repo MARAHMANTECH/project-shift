@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { APP_CONFIG } from "@/config/app";
-import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText, Shield } from "lucide-react";
+import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText, Shield, LogOut } from "lucide-react";
 import { UserMenu } from "./user-menu";
 
 const NAV_ITEMS = [
@@ -39,7 +40,7 @@ export function SidebarNav() {
       role="navigation"
       aria-label="Sidebjælke"
     >
-      {/* Logo — No-Line Rule: ingen border-bottom, tonal adskillelse */}
+      {/* Logo */}
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl gradient-forest text-white font-bold text-lg shadow-md">
@@ -56,7 +57,7 @@ export function SidebarNav() {
         </div>
       </div>
 
-      {/* Navigation — ingen borders, tonal active state */}
+      {/* Navigation */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const isActive =
@@ -83,10 +84,7 @@ export function SidebarNav() {
               `}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon
-                size={20}
-                strokeWidth={isActive ? 2 : 1.5}
-              />
+              <Icon size={20} strokeWidth={isActive ? 2 : 1.5} />
               <span>{item.label}</span>
               {isActive && (
                 <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500" />
@@ -122,9 +120,24 @@ export function SidebarNav() {
         </div>
       )}
 
-      {/* User section — Custom UserMenu */}
-      <div className="p-4">
+      {/* Bruger + Log ud */}
+      <div className="p-4 space-y-2">
         <UserMenu />
+        <button
+          id="sidebar-logout-btn"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="
+            w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl
+            text-sm font-medium
+            text-red-600 dark:text-red-400
+            hover:bg-red-50 dark:hover:bg-red-900/10
+            transition-all duration-200 ease-out
+            cursor-pointer
+          "
+        >
+          <LogOut size={18} strokeWidth={1.5} />
+          <span>Log ud</span>
+        </button>
       </div>
     </aside>
   );

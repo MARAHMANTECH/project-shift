@@ -74,3 +74,22 @@ Hovedfokusset er på en præmie-oplevelse. Konceptet kaldes the "Sustainable Con
 *   **Dansk Kultur- og Sprogpolicy:** Samtlige AI-agenter og udviklere forvisses absolut "zero tolerance" overfor fraværte specialkarakterer i al tekst der dækker kommentarer, logninger og UI ("Æ", "Ø", "Å"). Karakterer erstattes aldrig nogensinde med sub-varianter ("ae", "oe"). Filbehandlende databaser sikres med UTF-8 uden BOM til gavn for alle.
 *   **Nomenklatur:** Af systemtekniske årsager skal variabler, metoder, routes og databasetabeller *være og forblive fast forankret på letlæseligt engelsk* for international skalerbarhed (f.eks `organization_id`). Man designer koden teknisk på engelsk, men udtrykker interaktionen human-centric på dansk.
 *   **Idempotens og Sikkerhed:** Hvad enten om handlinger tilføres via API eller kommando via skripts, skal de designes idempotente - hvilket vil sige systemet evaluerer nuværende niveau *før* en handling gentages. Eventuelle rollback stier dokumenteres fyldestgørende. Backup-filer navngives med ISO 8601-timestamp efter formatet `backup_<kontekst>_<YYYY-MM-DD>_<HHmm>.<format>` og opbevares i en dedikeret `backups/`-mappe. Håndtering af fejl skal føre til en "Graceful exit", og fejl må aldrig stiltiende fejles, men logges med gennemsigtighed for driftens overvågethed.
+
+---
+
+## 7. Deployment Governance — Zero-Bug Policy (`.rules/06-deployment.md`)
+Denne politik er **ufravigelig** og sikrer 100% stabil drift for Project SHIFT. Ingen undtagelser.
+
+*   **Dev-First Mandate:** Intet må pushes direkte til `main` (production). Alle ændringer SKAL først committes, bygges, testes og verificeres i `development`-miljøet. Lokale builds (`npm run build`) SKAL gennemføres uden fejl før enhver commit.
+*   **Release Checklist (The Gatekeeper):** Før en ændring merges fra `development` til `main`, SKAL følgende 7 kontrolpunkter være opfyldt — mangler ét punkt, afvises mergen:
+    1.  **Build:** `npm run build` kører uden fejl lokalt (exit code 0).
+    2.  **Version:** `package.json` version er korrekt inkrementeret (SemVer).
+    3.  **CHANGELOG.md:** Ny entry med korrekt versionsnummer, dato og ændringsbeskrivelse.
+    4.  **SYSTEM_STATE.md:** Milestones og status reflekterer ændringen.
+    5.  **ARCHITECTURE.md:** Opdateret hvis nye moduler, services eller entiteter er tilføjet.
+    6.  **Dev-miljø test:** Ændringen er deployet og testet på Railway Development.
+    7.  **Test Sign-off:** Eksplicit "OK" kvitteret i PR eller logfil af QA / systemejer.
+*   **Automatiseret Verifikation:** Kør `npm run verify-release` (eller `bash scripts/verify-release.sh`) for at automatisere kontrol af build, versions-konsistens og dokumentation. Scriptet er idempotent og producerer en farvekoderet rapport.
+*   **Change Management Pakke (CMP):** Før enhver kritisk ændring (Auth-udbyder, infrastruktur, større databasemodifikationer) fremlægges en komplet CMP med: Implementation Plan, Risk & Impact Analysis, Rollback Plan og Test Plan.
+*   **Hard Rollback Standarder:** Kritiske kolonner/data-bindinger må aldrig hard-deletes i samme commit som migreringen — de omdøbes til `_deprecated_navn` i minimum 1 livscyklus. Auth-tjenester skiftes via `APP_ENV`-bundne miljøvariabler for stateless toggles.
+*   **Verifikationskrav:** Ingen merge til `main` uden eksplicit "Test Sign-off" fra QA eller systemejer. Ved fejl i production rulles der straks tilbage til forrige stabile build, og fejlen rettes i `development`.

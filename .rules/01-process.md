@@ -39,3 +39,18 @@
 - **MUST**: Opret nye filer i den korrekte modul-mappe (se `ARCHITECTURE.md`).
 - **NEVER**: Placer ALDRIG kode i rod-mappen med mindre det er en konfigurationsfil.
 - **MUST**: Brug barrel exports (`index.ts`) til at eksponere modul-grænseflader.
+
+## Dev-First Mandate (Zero-Bug Policy)
+
+> Denne politik er ufravigelig og sikrer 100% stabil drift for Project SHIFT.
+
+- **NEVER**: Push ALDRIG direkte til `main` (production). Alle ændringer SKAL først committes og testes på `development`-branchen.
+- **MUST**: Lokale builds (`npm run build`) SKAL gennemføres uden fejl før enhver commit.
+- **MUST**: Kør `npm run verify-release` (eller `bash scripts/verify-release.sh`) inden oprettelse af PR fra `development` → `main`.
+- **MUST**: Ingen merge til `main` uden eksplicit **"Test Sign-off"** fra manuel eller automatiseret gennemgang i dev-miljøet.
+- **MUST**: Ved fejl i production rulles der straks tilbage til forrige stabile build, og fejlen rettes i `development`.
+- **MUST**: Før en merge til `main` SKAL følgende dokumentation være opdateret:
+  1. **Version**: `package.json` version inkrementeret korrekt (SemVer)
+  2. **CHANGELOG.md**: Præcis beskrivelse af ændringen (Feature, Fix eller Forbedring)
+  3. **SYSTEM_STATE.md**: Milestones og aktuel status reflekterer ændringen
+  4. **ARCHITECTURE.md**: Opdateret hvis nye moduler, services eller entiteter er tilføjet

@@ -5,6 +5,77 @@ Format foelger [Semantic Versioning](https://semver.org/lang/da/).
 
 ---
 
+## [1.2.0] - 2026-04-15
+
+### Entra ID Group-Based Access Control (v0.7.0 Feature)
+
+Enterprise-kunder kan nu styre adgang til Project SHIFT via Security Groups i Microsoft Entra ID.
+
+#### Database Schema (Prisma)
+- **`Organization`**: Tilføjet `entra_group_id` og `entra_tenant_id` felter til tenant-konfiguration
+- Super-Admins kan nu knytte en Entra ID Security Group til en organisation
+
+#### Auth.js Konfiguration
+- **JWT Callback**: Udvider tokenet med `groups[]` (fra Entra ID profil-claims) og `tenantRequiredGroupId` (fra intern API)
+- **Session maxAge**: Reduceret fra 8 timer → 2 timer for hurtigere session-invalidation ved gruppe-ændringer
+- **Group Overage Handling**: Arkitektur forberedt til `_claim_names.groups` overage-scenariet (>200 grupper)
+
+#### Middleware — Edge Group Validation
+- **0ms DB-latency**: Gruppevalidering sker udelukkende via JWT-token på Edge (ingen databaseopslag pr. navigation)
+- **Soft Toggle**: Gruppetjek aktiveres KUN hvis `tenantRequiredGroupId` er defineret — deaktiveres øjeblikkeligt ved at slette gruppe-ID i admin-portalen
+- **SUPER_ADMIN Bypass**: Globale administratorer undtages automatisk fra tenant-specifikke gruppekrav
+
+#### Nye Filer
+- **`apps/web/src/app/unauthorized/page.tsx`**: SoulEx-designet "Adgang Nægtet" side med Forest Green accent, glassmorphism, og dansk brugervejledning
+- **`prisma/seed.ts`**: Tilføjet `SUPER_ADMIN` demo-konto (`super@project-shift.dk`)
+
+#### Ændrede Filer
+- `apps/web/src/middleware.ts` — Komplet omskrivning med group-validation og import-rettelse
+- `apps/web/src/lib/auth.ts` — Udvidet JWT/Session med groups, tenantRequiredGroupId, og reduceret maxAge
+
+#### Governance
+- Change Management pakke godkendt (Implementation Plan, Risk Analysis, Rollback Plan, Test Plan)
+- Overholder `.rules/06-deployment.md` — alle ændringer testet i DEV før merge
+
+---
+
+## [1.1.3] - 2026-04-15
+
+### Deployment Governance — Zero-Bug Policy
+
+Formalisering af en ufravigelig Zero-Bug Policy for Project SHIFT. Politikken sikrer, at ingen ustabil kode når production, og at alle releases gennemgår en dokumenteret kvalitetskontrol.
+
+#### Governance-regler
+- **`.rules/01-process.md`**: Ny sektion "Dev-First Mandate (Zero-Bug Policy)" med 6 ufravigelige regler: ingen direkte push til `main`, obligatorisk lokal build-verifikation, verify-release krav, Test Sign-off gate, rollback-pligt og dokumentationskrav.
+- **`.rules/06-deployment.md`**: Ny §0 "Zero-Bug Policy" preamble + ny §4 "Release Checklist — The Gatekeeper" med 7-punkts verifikationstabel der SKAL opfyldes før merge til `main`.
+- **`PROJECT_GOVERNANCE.md`**: Ny §7 "Deployment Governance — Zero-Bug Policy" med komplet sammenfatning af Dev-First Mandate, Release Checklist, CMP-krav, rollback-standarder og verifikationskrav.
+
+#### Automatisering
+- **`scripts/verify-release.sh`** [NY]: Automatiseret release-gatekeeper script med 5 verifikationskategorier:
+  1. Branch-verifikation (bekræfter `development` branch)
+  2. Build-verifikation (`npm run build` med exit code kontrol)
+  3. Versions-konsistens (package.json ↔ CHANGELOG.md ↔ SYSTEM_STATE.md)
+  4. Dokumentations-tjek (CHANGELOG, SYSTEM_STATE, ARCHITECTURE eksistens og alder)
+  5. Governance-regler integritet (`.rules/` fil-validering)
+- **`package.json`**: Nyt script `verify-release` som wrapper til bash-scriptet.
+
+#### Versions-synkronisering
+- **`package.json`**: Version synkroniseret fra `0.1.0` → `1.1.3` (var ude af sync med CHANGELOG.md).
+- Alle tre versionsfiler (`package.json`, `CHANGELOG.md`, `SYSTEM_STATE.md`) er nu synkroniseret til `1.1.3`.
+
+---
+
+## [1.1.2] - 2026-04-14
+
+### CI/CD — Opdeling af Development & Production Miljøer
+
+Projektet er strukturelt adskilt i to miljøer for at beskytte produktiondata og muliggøre sikker test.
+
+- **`APP_ENV` Miljøvariabel**: Tilføjet for at differentiere mellem runtime-miljøer uden at overskrive den bundne `NODE_ENV`.
+- **Miljø-dokumentation**: `ARCHITECTURE.md` nu indeholder retningslinjer for hvordan staging test foretages på `development` branchen (og ditto Railway miljø) før merge til `main`.
+
+---
+
 ## [1.1.1] - 2026-04-14
 
 ### M5.2: Railway Deployment CI/CD Fixes (Monorepo)

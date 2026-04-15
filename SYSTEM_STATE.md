@@ -6,7 +6,7 @@
 ---
 
 ## Aktuel Version
-`v0.6.6` - M6: Entra ID Integration & Speed Optimization
+`v1.2.0` - Entra ID Group-Based Access Control
 
 ## Aktuel Milestone
 **M6: Auth Migration** ✅ Clerk → NextAuth.js + Microsoft Entra ID
@@ -56,6 +56,10 @@
 | DATABASE_URL fleksibel validering | ✅ Bugfix |
 | prisma CLI som prod dep (migrate deploy) | ✅ Bugfix |
 | Git repository | ✅ Initialiseret |
+| Zero-Bug Policy governance | ✅ Færdig |
+| Release Checklist (The Gatekeeper) | ✅ Færdig |
+| verify-release.sh automatisering | ✅ Færdig |
+| Versions-synkronisering (package.json) | ✅ Bugfix |
 
 ## Færdiggjorte Filer
 
@@ -104,6 +108,12 @@
 - `apps/web/src/lib/privacy.ts` - GPS privacy helpers
 - `apps/web/public/manifest.json` - PWA manifest
 
+### Governance: Zero-Bug Policy (2026-04-15)
+- `scripts/verify-release.sh` - Automatiseret release gatekeeper
+- `.rules/01-process.md` - Dev-First Mandate sektion
+- `.rules/06-deployment.md` - Zero-Bug Policy + Release Checklist
+- `PROJECT_GOVERNANCE.md` - §7: Deployment Governance
+
 ## Tech Stack (Bekræftet)
 
 | Lag | Teknologi |
@@ -133,5 +143,5 @@
 
 ---
 
-> **Sidst opdateret**: 2026-04-11T00:16:00+02:00
-> **Opdateret af**: AI Agent (v0.6.6 Auth Migration & Performance)
+> **Sidst opdateret**: 2026-04-15T12:34:00+02:00
+> **Opdateret af**: AI Agent (v1.2.0 Entra ID Group-Based Access Control + Zero-Bug Policy)

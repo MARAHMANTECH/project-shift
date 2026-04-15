@@ -69,7 +69,7 @@
 ### Domæne 1: Auth & Organization
 | Model | Formaal | Tenant-scoped |
 |-------|---------|---------------|
-| `Organization` | Virksomhed / tenant | Self (id) |
+| `Organization` | Virksomhed / tenant (med `entra_group_id` + `entra_tenant_id`) | Self (id) |
 | `User` | Medarbejder | Ja |
 | `EmailDomain` | Verificerede e-mail domæner | Ja |
 | `OrgModule` | Feature flags pr. organisation | Ja |
@@ -143,7 +143,7 @@ CO2_sparet (kg) = distance_km * emission_factor * (1 - 1 / total_occupants)
 - **Prefix:** `/api/v1/`
 - **Format:** RESTful, JSON
 - **Fejl:** RFC 7807 Problem Details
-- **Auth:** NextAuth.js JWT i `Authorization: Bearer <token>` eller session cookie
+- **Auth:** NextAuth.js JWT i `Authorization: Bearer <token>` eller session cookie (maxAge: 2 timer)
 - **Auth Provider:** Microsoft Entra ID (multi-tenant) via NextAuth.js — JWT verificeres med `jose` library
 - **Credentials Fallback:** Skjult email/password provider (aktiveres via `ENABLE_CREDENTIALS_LOGIN=true`)
 - **Tenant:** Udtrukket fra JWT `organizationId` claim
@@ -195,6 +195,27 @@ Alle UI-ændringer SKAL overholde `.rules/05-branding.md`.
 
 ---
 
+## Miljøer & CI/CD Pipeline (Railway)
+
+For at sikre kvalitet i leverancen har projektet adskilte miljøer:
+
+*   **Production Environment (`main` branch):** 
+    *   Det primære produktionsmiljø.
+    *   Deployes automatisk på Railway "Production" ved merge til `main`.
+    *   Har live / isoleret produktions-database (`DATABASE_URL`).
+    *   Kører med `APP_ENV="production"`.
+*   **Development Environment (`development` branch):**
+    *   Vores sikre testmiljø. 
+    *   Alle features testes her indledningsvist.
+    *   Deployes automatisk på Railway "Development".
+    *   Har en fuldt isoleret test-database, hvilket sikrer destruktiv data-manipulation ikke påvirker brugere.
+    *   Kører med `APP_ENV="development"`.
+*   **Lokalt (`localhost`):**
+    *   Udviklerens lokale checkout.
+    *   Kører med `NODE_ENV="development"` og `APP_ENV="development"`.
+
+---
+
 ## Mappestruktur
 
 ```
@@ -212,5 +233,5 @@ Project_SHIFT/
 
 ---
 
-> **Sidst opdateret:** 2026-04-10T21:57:00+02:00
-> **Version:** v1.1.0 (Auth Migrering: Clerk → NextAuth.js + Entra ID)
+> **Sidst opdateret:** 2026-04-15T12:34:00+02:00
+> **Version:** v1.2.0 (Entra ID Group-Based Access Control + Zero-Bug Policy)

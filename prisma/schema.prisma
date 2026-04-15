@@ -21,10 +21,12 @@ model Organization {
   id        String    @id @default(cuid())
   name      String
   slug      String    @unique
-  logoUrl   String?   @map("logo_url")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  logoUrl       String?   @map("logo_url")
+  entraGroupId  String?   @map("entra_group_id")
+  entraTenantId String?   @map("entra_tenant_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   // Relations
   users          User[]

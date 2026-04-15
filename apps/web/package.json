@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "@project-shift/shared-types": "*",
     "@tanstack/react-query": "^5.75.0",
     "lucide-react": "^1.7.0",

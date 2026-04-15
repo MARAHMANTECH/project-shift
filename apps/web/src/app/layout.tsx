@@ -45,7 +45,7 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang="da" className={bricolage.variable} suppressHydrationWarning>
-        <body className="font-sans">
+        <body className="font-sans" suppressHydrationWarning>
           <QueryProvider>
             <AuthTokenProvider>{children}</AuthTokenProvider>
           </QueryProvider>

@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { APP_CONFIG } from "@/config/app";
-import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText } from "lucide-react";
+import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText, Shield } from "lucide-react";
 import { UserMenu } from "./user-menu";
 
 const NAV_ITEMS = [
@@ -18,6 +19,14 @@ const NAV_ITEMS = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => setIsSuperAdmin(data.role === "SUPER_ADMIN"))
+      .catch(() => setIsSuperAdmin(false));
+  }, []);
 
   return (
     <aside
@@ -86,6 +95,32 @@ export function SidebarNav() {
           );
         })}
       </nav>
+
+      {/* Super Admin — kun synlig for SUPER_ADMIN */}
+      {isSuperAdmin && (
+        <div className="px-4 pb-2">
+          <Link
+            id="sidebar-super-admin"
+            href="/admin/super"
+            className={`
+              flex items-center gap-3 px-4 py-2.5 rounded-2xl
+              text-sm font-medium
+              transition-all duration-200 ease-out
+              ${
+                pathname.startsWith("/admin/super")
+                  ? "bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 shadow-sm font-semibold"
+                  : "text-neutral-600 dark:text-neutral-400 hover:surface-container"
+              }
+            `}
+          >
+            <Shield size={20} strokeWidth={pathname.startsWith("/admin/super") ? 2 : 1.5} />
+            <span>Super Admin</span>
+            {pathname.startsWith("/admin/super") && (
+              <div className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-600" />
+            )}
+          </Link>
+        </div>
+      )}
 
       {/* User section — Custom UserMenu */}
       <div className="p-4">

@@ -1,20 +1,22 @@
 "use client";
 
-// Super Admin Dashboard — Oversigt
-// Dark Forest Green theme for distinct admin experience
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   Building2,
   Users,
-  Plug,
-  Plus,
   Search,
+  Plus,
   ChevronRight,
   Shield,
+  BarChart3,
+  Settings,
+  Plug,
+  Leaf,
+  ArrowLeft,
 } from "lucide-react";
-import { AdminShell } from "./components/admin-shell";
+import { AdminShell } from "../components/admin-shell";
 
 interface TenantOverview {
   id: string;
@@ -34,9 +36,10 @@ interface TenantOverview {
   } | null;
   emailDomains: { domain: string }[];
   entraGroupId: string | null;
+  entraTenantId: string | null;
 }
 
-export default function SuperAdminDashboard() {
+export default function TenantsPage() {
   const [tenants, setTenants] = useState<TenantOverview[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -49,6 +52,7 @@ export default function SuperAdminDashboard() {
   async function fetchTenants(): Promise<void> {
     try {
       setIsLoading(true);
+      setError(null);
       const res = await fetch("/api/admin/tenants");
       if (!res.ok) throw new Error("Kunne ikke hente organisationer");
       const data = await res.json();
@@ -118,7 +122,7 @@ export default function SuperAdminDashboard() {
         />
       </div>
 
-      {/* Stats Row */}
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {[
           { label: "Aktive organisationer", value: tenants.filter((t) => !t.deletedAt).length, icon: Building2, color: "var(--color-primary-600)" },
@@ -154,26 +158,44 @@ export default function SuperAdminDashboard() {
           <p className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
             {search ? `Ingen organisationer matcher "${search}"` : "Ingen organisationer endnu"}
           </p>
+          {!search && (
+            <Link href="/admin/super/tenants/new" className="inline-flex items-center gap-1 mt-3 text-sm font-medium underline" style={{ color: "var(--color-primary-600)" }}>
+              <Plus size={14} /> Opret den første
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
           {filteredTenants.map((tenant) => (
-            <div key={tenant.id} className="flex items-center gap-4 p-4 lg:p-5 rounded-2xl group" style={{ background: "var(--color-surface-elevated)", boxShadow: "var(--shadow-sm)" }}>
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, var(--color-primary-100), var(--color-primary-200))", color: "var(--color-primary-700)" }}>
+            <div
+              key={tenant.id}
+              className="flex items-center gap-4 p-4 lg:p-5 rounded-2xl group"
+              style={{ background: "var(--color-surface-elevated)", boxShadow: "var(--shadow-sm)" }}
+            >
+              {/* Avatar */}
+              <div
+                className="h-12 w-12 rounded-xl flex items-center justify-center text-lg font-bold flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, var(--color-primary-100), var(--color-primary-200))", color: "var(--color-primary-700)" }}
+              >
                 {tenant.name.charAt(0).toUpperCase()}
               </div>
+              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-sm truncate" style={{ color: "var(--color-text-primary)" }}>{tenant.name}</h3>
                   {tenant.license && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tierColors[tenant.license.tier] ?? ""}`}>{tenant.license.tier}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tierColors[tenant.license.tier] ?? ""}`}>
+                      {tenant.license.tier}
+                    </span>
+                  )}
+                  {tenant.entraGroupId && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">ENTRA ID</span>
                   )}
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
                   {tenant.slug} · {tenant._count?.users ?? 0} brugere · {tenant.emailDomains?.map((d) => d.domain).join(", ")}
                 </p>
               </div>
-              <ChevronRight size={18} className="flex-shrink-0 opacity-30 group-hover:opacity-70 transition-opacity" style={{ color: "var(--color-text-secondary)" }} />
             </div>
           ))}
         </div>

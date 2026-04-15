@@ -66,6 +66,19 @@ async function main(): Promise<void> {
   // ============================================================
   // 4. Create demo users
   // ============================================================
+  const superAdminUser = await prisma.user.upsert({
+    where: { email: "super@project-shift.dk" },
+    update: {},
+    create: {
+      externalAuthId: "clerk_demo_superadmin_001",
+      email: "super@project-shift.dk",
+      firstName: "Mette",
+      lastName: "Superadmin",
+      role: UserRole.SUPER_ADMIN,
+      organizationId: demoOrg.id,
+    },
+  });
+
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@acme.dk" },
     update: {},

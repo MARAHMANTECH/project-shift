@@ -38,7 +38,12 @@ export class SuperAdminService {
     const tenants = await this.prisma.organization.findMany({
       where,
       include: {
-        _count: { select: { users: true, rides: true } },
+        _count: {
+          select: {
+            users: { where: { deletedAt: null } },
+            rides: true,
+          },
+        },
         license: true,
         modules: { where: { isEnabled: true } },
         ssoConnections: { where: { status: "ACTIVE" } },
@@ -154,13 +159,21 @@ export class SuperAdminService {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 100, // Limit in-memory users for performance, stats come from DB
         },
         license: true,
         modules: true,
         emailDomains: true,
         ssoConnections: true,
         integrations: true,
-        _count: { select: { rides: true, events: true, auditLogs: true } },
+        _count: {
+          select: {
+            users: { where: { deletedAt: null } },
+            rides: true,
+            events: true,
+            auditLogs: true,
+          },
+        },
       },
     });
 
@@ -168,11 +181,20 @@ export class SuperAdminService {
       throw new NotFoundException(`Organisation ${orgId} ikke fundet.`);
     }
 
+    // Get active users count separately as Prisma _count doesn't support multiple filtered counts for same relation easily
+    const activeUsersCount = await this.prisma.user.count({
+      where: {
+        organizationId: orgId,
+        isActive: true,
+        deletedAt: null,
+      },
+    });
+
     return {
       ...org,
       stats: {
-        totalUsers: org.users.length,
-        activeUsers: org.users.filter((u) => u.isActive).length,
+        totalUsers: org._count.users,
+        activeUsers: activeUsersCount,
         totalRides: org._count.rides,
         totalEvents: org._count.events,
         totalAuditEntries: org._count.auditLogs,

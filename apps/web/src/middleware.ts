@@ -18,10 +18,11 @@ export default function middleware(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const token = req.auth as any; 
 
-    // 1. Fast-path: Skip auth overhead for statiske filer og API login-ruter
+    // 1. Fast-path: Skip auth overhead for statiske filer, API login-ruter, og unauthorized siden
     if (
       nextUrl.pathname.startsWith("/api/auth") ||
       nextUrl.pathname.startsWith("/_next") ||
+      nextUrl.pathname.startsWith("/unauthorized") ||
       nextUrl.pathname.match(/\.(.*)$/)
     ) {
       return;
@@ -40,9 +41,7 @@ export default function middleware(request: NextRequest) {
       const isSuperAdmin = token?.role === "SUPER_ADMIN";
       
       if (!isSuperAdmin && !userGroups.includes(requiredGroupId)) {
-         if (!nextUrl.pathname.startsWith("/unauthorized")) {
-           return Response.redirect(new URL("/unauthorized", nextUrl));
-         }
+        return Response.redirect(new URL("/unauthorized", nextUrl));
       }
     }
 

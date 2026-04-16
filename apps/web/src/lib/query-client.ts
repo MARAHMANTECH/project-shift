@@ -8,12 +8,12 @@ export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Stale time: 5 minutter — data betragtes som "frisk" i 5 min
-        // Eliminerer unødvendige re-fetches ved side-skift
-        staleTime: 5 * 60 * 1000,
-        // Garbage collection: 10 minutter — cache lever længe nok til
+        // Stale time: 30 minutter — data betragtes som "frisk" i 30 min
+        // Eliminerer unødvendige re-fetches ved side-skift til dashboard komponenter
+        staleTime: 30 * 60 * 1000,
+        // Garbage collection: 60 minutter — cache lever længe nok til
         // at brugeren kan navigere frem og tilbage uden data-tab
-        gcTime: 10 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
         // Retry 2 gange ved fejl
         retry: 2,
         // Deaktivér re-fetch ved window focus (undgå unødvendig traffic)

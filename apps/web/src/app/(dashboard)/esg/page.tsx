@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Image from "next/image";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -26,7 +27,7 @@ const ACHIEVEMENTS = [
   { icon: "🏆", name: "Klimahelt", desc: "Spar 500 kg CO₂", threshold: 500 },
 ];
 
-export default function EsgPage() {
+function EsgDashboardContent() {
   const { data: esg, isLoading } = useEsgSummary();
 
   const co2Saved = esg?.totalCo2SavedKg ?? 0;
@@ -46,7 +47,7 @@ export default function EsgPage() {
   const maxCo2 = Math.max(...monthlyData.map((d) => d.co2), 1);
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
+    <>
       {/* ── Growth Ring Hero — Stitch Koncept 3 ── */}
       <div className="relative -mx-4 lg:-mx-6 -mt-4 lg:-mt-6 overflow-hidden">
         {/* Dark gradient baggrund */}
@@ -228,6 +229,16 @@ export default function EsgPage() {
           </p>
         </div>
       </div>
+    </>
+  );
+}
+
+export default function EsgPage() {
+  return (
+    <div className="space-y-6 animate-fade-in relative">
+      <Suspense fallback={<div className="flex gap-3"><SkeletonStatCard /><SkeletonStatCard /><SkeletonStatCard /></div>}>
+        <EsgDashboardContent />
+      </Suspense>
     </div>
   );
 }

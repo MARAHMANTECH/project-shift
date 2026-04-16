@@ -174,3 +174,12 @@
 
 > **Sidst opdateret**: 2026-04-15T17:12:00+02:00
 > **Opdateret af**: AI Agent (v1.3.0 Super Admin Modul + JIT User Provisioning)
+
+## Seneste Opdateringer
+- **Task 1: The Speed Fix (Performance Audit)**
+  - Optimerede React Query cache-indstillinger i `apps/web/src/lib/query-client.ts` (`staleTime: 30m`, `gcTime: 60m`).
+  - Implementerede `<Suspense>` i ESG-dashboard (`apps/web/src/app/(dashboard)/esg/page.tsx`).
+- **Task 2: Security Group Access Control**
+  - Justerede `middleware.ts` for korrekt validering af `groups` claim fra Entra ID med redirect til `/unauthorized` og korrektion af infinite loop.
+- **Task 3: Super-Admin & Changelog Foundation**
+  - Bekræftede at `/admin/super` API'erne for Changelog, Feedback og Integrationer allerede var etableret og testede dev build.

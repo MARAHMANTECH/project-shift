@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { APP_CONFIG } from "@/config/app";
 import { LayoutDashboard, Car, Search, PlusCircle, Leaf, Users, ScrollText, Shield, LogOut } from "lucide-react";
 import { UserMenu } from "./user-menu";
@@ -20,14 +19,8 @@ const NAV_ITEMS = [
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => setIsSuperAdmin(data.role === "SUPER_ADMIN"))
-      .catch(() => setIsSuperAdmin(false));
-  }, []);
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.role === "SUPER_ADMIN";
 
   return (
     <aside

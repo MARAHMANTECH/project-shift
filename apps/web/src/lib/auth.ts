@@ -111,16 +111,24 @@ const fullConfig = {
           if (email) {
             const dbUser = await prisma.user.findUnique({
               where: { email },
-              select: { role: true, organizationId: true },
+              select: { role: true, organizationId: true, organization: { select: { entraGroupId: true } } },
             });
             if (dbUser) {
               token.role = dbUser.role;
               token.organizationId = dbUser.organizationId;
+              token.tenantRequiredGroupId = dbUser.organization?.entraGroupId;
             }
           }
         } catch (error) {
           console.error("Kunne ikke hente rolle fra DB:", error);
         }
+      }
+
+      // Optimize JWT size by trimming the massive Entra ID groups array
+      if (token.tenantRequiredGroupId && Array.isArray(token.groups) && token.groups.includes(token.tenantRequiredGroupId)) {
+        token.groups = [token.tenantRequiredGroupId as string];
+      } else {
+        token.groups = [];
       }
 
       return token;

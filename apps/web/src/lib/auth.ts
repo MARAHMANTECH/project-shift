@@ -111,11 +111,30 @@ const fullConfig = {
           if (email) {
             const dbUser = await prisma.user.findUnique({
               where: { email },
-              select: { role: true, organizationId: true },
+              select: {
+                role: true,
+                organizationId: true,
+                organization: { select: { entraGroupId: true } }
+              },
             });
+
             if (dbUser) {
               token.role = dbUser.role;
               token.organizationId = dbUser.organizationId;
+
+              if (dbUser.organization?.entraGroupId) {
+                token.tenantRequiredGroupId = dbUser.organization.entraGroupId;
+              }
+            }
+
+            // OPTIMIZATION: Filter massive Entra ID groups array to prevent navigation lag
+            if (token.tenantRequiredGroupId && Array.isArray(token.groups)) {
+              token.groups = token.groups.includes(token.tenantRequiredGroupId)
+                ? [token.tenantRequiredGroupId]
+                : [];
+            } else {
+              // If no required group is configured, keep it empty to save JWT space
+              token.groups = [];
             }
           }
         } catch (error) {
